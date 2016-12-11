@@ -1,0 +1,14 @@
+apply from: "../subBuild.gradle"
+
+dependencies {
+    compile "$jme_core"
+    compile "com.simsilica:lemur:+"
+    compile "com.simsilica:lemur-proto:+"
+//    compile "com.simsilica:lemur-props:+"
+    //compile "org.slf4:slf4-api"
+//    compile 'ch.qos.logback:logback-core:+'
+//    compile 'ch.qos.logback:logback-classic:+'
+
+    compile 'com.google.guava:guava:19.+'
+    compile 'org.codehaus.groovy:groovy-all:2.4.+'
+}
