@@ -53,7 +53,7 @@ public class ViewportPanel extends Panel {
         super(elementid, style);
         viewPortNode = new Node("Root Node ViewPort Panel");
 
-        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value.
+//        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value. Try with setSize instead?
 
         addControl(new AbstractControl() {
             @Override
