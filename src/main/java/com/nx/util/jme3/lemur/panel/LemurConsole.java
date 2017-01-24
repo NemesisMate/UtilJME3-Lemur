@@ -174,7 +174,7 @@ public class LemurConsole<T> extends Panel {
         }
         
         setName("Console");
-        textField = new TextField("");
+        textField = new TextField("", style);
         
         KeyActionListener submissionListener = new KeyActionListener() {
             @Override
