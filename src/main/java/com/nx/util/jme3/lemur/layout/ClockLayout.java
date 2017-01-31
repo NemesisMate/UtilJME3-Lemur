@@ -134,13 +134,13 @@ public class ClockLayout extends AbstractGuiComponent
 
             GuiControl control = n.getControl(GuiControl.class);
 
-            System.out.println("SIZE BEFORE IS: " + control.getPreferredSize());
+//            System.out.println("SIZE BEFORE IS: " + control.getPreferredSize());
 
 //            Vector3f pref = control.getSize();
 
             if(fill == FillMode.None) {
                 control.setSize(control.getPreferredSize());
-                System.out.println("SIZE AFTER IS: " + control.getPreferredSize());
+//                System.out.println("SIZE AFTER IS: " + control.getPreferredSize());
 
 //                Vector3f pref = control.getSize().set(preferredSizes.get(i));
 //                control.setSize(pref);

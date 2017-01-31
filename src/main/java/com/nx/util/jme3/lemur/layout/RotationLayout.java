@@ -8,7 +8,6 @@ import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.component.AbstractGuiComponent;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiLayout;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -132,8 +131,8 @@ public class RotationLayout extends AbstractGuiComponent
         if(!reset) {
             child.setLocalRotation(child.getLocalRotation().fromAngleAxis(angle, Vector3f.UNIT_Z));
         } else {
-            LoggerFactory.getLogger(this.getClass()).debug("OK, THE QUAT IS: {}, L: {}", child.getWorldRotation(), child.getLocalRotation());
-            LoggerFactory.getLogger(this.getClass()).debug("OK, THE Trans IS: {}, L: {}", child.getWorldTranslation(), child.getLocalTranslation());
+//            LoggerFactory.getLogger(this.getClass()).debug("OK, THE QUAT IS: {}, L: {}", child.getWorldRotation(), child.getLocalRotation());
+//            LoggerFactory.getLogger(this.getClass()).debug("OK, THE Trans IS: {}, L: {}", child.getWorldTranslation(), child.getLocalTranslation());
 
             child.setLocalRotation(Quaternion.IDENTITY);
             Quaternion rot = child.getLocalRotation().set(child.getWorldRotation()).inverseLocal();
