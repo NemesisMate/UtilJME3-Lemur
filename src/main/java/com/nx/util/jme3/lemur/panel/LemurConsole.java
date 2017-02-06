@@ -120,13 +120,13 @@ public class LemurConsole<T> extends Panel {
 
     
     public LemurConsole() {
-        this(true, new VersionedList<>(), null,
+        this(true, new VersionedList<T>(), null,
              new ElementId(ELEMENT_ID), null);             
     }
 
     public LemurConsole(VersionedList<T> model ) {
-        this(true, model, null, 
-                new ElementId(ELEMENT_ID), null);             
+        this(true, model, null,
+                new ElementId(ELEMENT_ID), null);
     }
 
     public LemurConsole(VersionedList<T> model, CellRenderer<T> renderer, String style ) {
