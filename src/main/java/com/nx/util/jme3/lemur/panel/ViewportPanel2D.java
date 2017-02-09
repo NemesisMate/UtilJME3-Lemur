@@ -45,6 +45,10 @@ public class ViewportPanel2D extends ViewportPanel {
 
     @Override
     protected void setViewPortSize(Vector3f size) {
+        if(viewport == null) {
+            return;
+        }
+
         super.setViewPortSize(size);
         
         Camera camera = viewport.getCamera();

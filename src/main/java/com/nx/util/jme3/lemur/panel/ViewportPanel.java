@@ -18,6 +18,8 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.simsilica.lemur.Panel;
+import com.simsilica.lemur.component.AbstractGuiComponent;
+import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.event.BasePickState;
 import com.simsilica.lemur.event.PickState;
 import com.simsilica.lemur.style.ElementId;
@@ -30,7 +32,7 @@ import org.slf4j.LoggerFactory;
 public class ViewportPanel extends Panel {
     protected ViewPort viewport;
     protected Node viewPortNode;
-    protected Vector3f lastSize = new Vector3f();
+//    protected Vector3f lastSize = new Vector3f();
     protected Camera cam;
     protected RenderManager renderManager;
     protected AppStateManager stateManager;
@@ -55,18 +57,31 @@ public class ViewportPanel extends Panel {
 
 //        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value. Try with setSize instead?
 
+        getControl(GuiControl.class).addComponent(new AbstractGuiComponent() {
+            @Override
+            public void calculatePreferredSize(Vector3f size) {
+
+            }
+
+            @Override
+            public void reshape(Vector3f pos, Vector3f size) {
+                open();
+                setViewPortSize(size);
+            }
+        });
+
         addControl(new AbstractControl() {
             @Override
             protected void controlUpdate(float tpf) {
 
                 if(viewport != null) {
 
-                    Vector3f size = ViewportPanel.this.getSize();
-//                    LoggerFactory.getLogger(this.getClass()).debug("Size: {}.", size);
-                    if(!size.equals(lastSize)) {
-                        lastSize.set(size);
-                        setViewPortSize(lastSize);
-                    }
+//                    Vector3f size = ViewportPanel.this.getSize();
+////                    LoggerFactory.getLogger(this.getClass()).debug("Size: {}.", size);
+//                    if(!size.equals(lastSize)) {
+//                        lastSize.set(size);
+//                        setViewPortSize(lastSize);
+//                    }
 
                     viewPortNode.updateLogicalState(tpf);
 
@@ -128,64 +143,11 @@ public class ViewportPanel extends Panel {
 
                     viewPortNode.updateGeometricState();
 
-                } else {
-
-                    open();
-
-                    Node rootParent = null;
-                    Node parent = spatial.getParent();
-                    while(parent != null) {
-                        rootParent = parent;
-                        parent = parent.getParent();
-                    }
-
-                    if(rootParent != null) {
-                        ViewportPanel.this.rootNode = rootParent;
-                        rootParent.addControl(new AbstractControl() {
-                            @Override
-                            protected void controlUpdate(float tpf) {
-                                Node rootParent = null;
-                                Node parent = ViewportPanel.this.getParent();
-                                while(parent != null) {
-                                    rootParent = parent;
-                                    parent = parent.getParent();
-                                }
-
-                                if(rootParent != spatial) {
-                                    close();
-                                    spatial.removeControl(this);
-                                }
-                            }
-
-                            @Override
-                            public void setSpatial(Spatial spatial) {
-
-
-                                if(spatial == null) {
-                                    if(viewport != null) {
-                                        LoggerFactory.getLogger(this.getClass()).warn("Shouldn't be removing this control manually!");
-//                                        this.spatial.addControl(this); // Readd??, or just better let the developer see problem.
-                                    }
-//                                    close();
-                                }
-
-                                super.setSpatial(spatial);
-                            }
-
-                            @Override
-                            protected void controlRender(RenderManager rm, ViewPort vp) {
-
-                            }
-                        });
-
-                    }
-
-
-
-
+                }
+//                else {
 
 //                    open();
-                }
+//                }
 //                LoggerFactory.getLogger(this.getClass()).debug("Geom location: {}, scale: {}.", geom.getWorldTranslation(), geom.getWorldScale());
             }
 
@@ -230,16 +192,70 @@ public class ViewportPanel extends Panel {
     }
 
     private void open() {
-        LoggerFactory.getLogger(this.getClass()).debug("Opening viewport panel");
+        if(viewport != null) {
+            return;
+        }
+//        LoggerFactory.getLogger(this.getClass()).debug("Opening viewport panel");
 
         setViewPort(renderManager.createPostView("viewportPanel", cam));
 
         /*
-         * Se ha puesto que use la layer "PICK_LAYER_GUI" para que reconozca los eventos de raton, de la otra forma
+         * Se ha puesto que use la layer "PICK_LAYER_GUI" para que reconozca los eventos de ratón, de la otra forma
          * no los reconoce si hay algún panel que tome eventos (aunque no los consuma), tanto debajo como encima de
          * él graficamente.
         */
         stateManager.getState(BasePickState.class).addCollisionRoot(viewPortNode, viewport, PickState.PICK_LAYER_GUI);
+
+        // Ensure that it gets closed when it is detached from the scenegraph.
+        Node rootParent = null;
+        Node parent = getParent();
+        while(parent != null) {
+            rootParent = parent;
+            parent = parent.getParent();
+        }
+
+        if(rootParent != null) {
+            ViewportPanel.this.rootNode = rootParent;
+            rootParent.addControl(new AbstractControl() {
+                @Override
+                protected void controlUpdate(float tpf) {
+                    Node rootParent = null;
+                    Node parent = ViewportPanel.this.getParent();
+                    while(parent != null) {
+                        rootParent = parent;
+                        parent = parent.getParent();
+                    }
+
+                    if(rootParent != spatial) {
+                        close();
+                        spatial.removeControl(this);
+                    }
+                }
+
+                @Override
+                public void setSpatial(Spatial spatial) {
+
+
+                    if(spatial == null) {
+                        if(viewport != null) {
+                            LoggerFactory.getLogger(this.getClass()).warn("Shouldn't be removing this control manually!");
+//                                        this.spatial.addControl(this); // Readd??, or just better let the developer see problem.
+                        }
+//                                    close();
+                    }
+
+                    super.setSpatial(spatial);
+                }
+
+                @Override
+                protected void controlRender(RenderManager rm, ViewPort vp) {
+
+                }
+            });
+
+        }
+
+
     }
 
     private void close() {
@@ -258,7 +274,7 @@ public class ViewportPanel extends Panel {
 
         renderManager.removePostView(viewport);
         stateManager.getState(BasePickState.class).removeCollisionRoot(viewport);
-        lastSize.set(0, 0, 0);
+//        lastSize.set(0, 0, 0);
 
         viewport = null;
     }
