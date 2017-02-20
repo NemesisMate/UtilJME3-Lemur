@@ -18,7 +18,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.simsilica.lemur.Panel;
-import com.simsilica.lemur.component.AbstractGuiComponent;
+import com.simsilica.lemur.core.AbstractGuiControlListener;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.event.BasePickState;
 import com.simsilica.lemur.event.PickState;
@@ -57,14 +57,9 @@ public class ViewportPanel extends Panel {
 
 //        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value. Try with setSize instead?
 
-        getControl(GuiControl.class).addComponent(new AbstractGuiComponent() {
+        getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
             @Override
-            public void calculatePreferredSize(Vector3f size) {
-
-            }
-
-            @Override
-            public void reshape(Vector3f pos, Vector3f size) {
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 open();
                 setViewPortSize(size);
             }

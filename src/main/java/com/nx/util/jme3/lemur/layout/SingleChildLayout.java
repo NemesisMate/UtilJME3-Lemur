@@ -15,9 +15,9 @@ import java.util.Collections;
 public abstract class SingleChildLayout extends AbstractGuiComponent
         implements GuiLayout, Cloneable {
 
-    private GuiControl parent;
+    protected GuiControl parent;
 
-    private Node child;
+    protected Node child;
 
     public SingleChildLayout() {
     }
@@ -30,7 +30,9 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
     }
 
     @Override
-    public abstract SingleChildLayout clone();
+    public SingleChildLayout clone() {
+        return (SingleChildLayout) super.clone();
+    }
 
     @Override
     public abstract void calculatePreferredSize(Vector3f size);

@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * TODO: when only one child, show it in the center.
  * TODO: there is much more optimization to do here. Just take a look xD.
  * Created by NemesisMate on 16/01/17.
  */
