@@ -81,9 +81,10 @@ public class ViewportPanel extends Panel {
                     viewPortNode.updateLogicalState(tpf);
 
                     if(autoZoom) {
-                        Spatial child = viewPortNode.getChild(0);
-                        if(child != null) {
-
+                        
+                        if(viewPortNode.getQuantity() > 0) {
+                            
+                            Spatial child = viewPortNode.getChild(0);
                             viewPortNode.updateModelBound();
 
                             //FIXME: When rotating, the bounds dimension can change, making the y be bigger than the x or z and viceverse, showing an undesired zoom-in-out effect.
