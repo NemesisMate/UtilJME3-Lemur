@@ -17,7 +17,7 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
 
     protected GuiControl parent;
 
-    protected Node child;
+    private Node child;
 
     public SingleChildLayout() {
     }
@@ -35,10 +35,23 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
     }
 
     @Override
-    public abstract void calculatePreferredSize(Vector3f size);
+    public void calculatePreferredSize(Vector3f size) {
+        if(child != null) {
+            calculatePreferredSize(size, child);
+        }
+    }
 
     @Override
-    public abstract void reshape(Vector3f pos, Vector3f size);
+    public void reshape(Vector3f pos, Vector3f size) {
+        if(child != null) {
+            reshape(pos, size, child);
+        }
+    }
+
+
+    protected abstract void calculatePreferredSize(Vector3f size, Node child);
+
+    protected abstract void reshape(Vector3f pos, Vector3f size, Node child);
 
     @Override
     public <T extends Node> T addChild(T n, Object... constraints) {
@@ -68,9 +81,10 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
             return;
         }
 
-        if( parent != null ) {
-            parent.getNode().detachChild(n);
-        }
+        detach(parent);
+//        if( parent != null ) {
+//            parent.getNode().detachChild(n);
+//        }
 
         invalidate();
     }
