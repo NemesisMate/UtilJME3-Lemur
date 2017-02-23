@@ -81,10 +81,11 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
             return;
         }
 
-        detach(parent);
-//        if( parent != null ) {
-//            parent.getNode().detachChild(n);
-//        }
+        child = null;
+
+        if( parent != null ) {
+            parent.getNode().detachChild(n);
+        }
 
         invalidate();
     }
