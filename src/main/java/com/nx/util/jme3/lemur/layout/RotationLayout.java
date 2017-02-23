@@ -2,6 +2,7 @@ package com.nx.util.jme3.lemur.layout;
 
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.jme3.util.TempVars;
 import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.core.GuiControl;
@@ -11,7 +12,8 @@ import com.simsilica.lemur.core.GuiControl;
  */
 public class RotationLayout extends SingleChildLayout {
 
-    private final Vector3f lastPreferredSize = new Vector3f();
+    //TODO: Is this really needed?
+//    private final Vector3f lastPreferredSize = new Vector3f();
 
     float angle;
     boolean reset;
@@ -54,12 +56,9 @@ public class RotationLayout extends SingleChildLayout {
 //    }
 
     @Override
-    public void calculatePreferredSize(Vector3f size) {
-        if(child == null) {
-            return;
-        }
+    public void calculatePreferredSize(Vector3f size, Node child) {
 
-        lastPreferredSize.set(size);
+//        lastPreferredSize.set(size);
 
         //TODO:
         if(child instanceof Panel) {
@@ -107,16 +106,12 @@ public class RotationLayout extends SingleChildLayout {
     }
 
     @Override
-    public void reshape(Vector3f pos, Vector3f size) {
-        calculatePreferredSize(size);
+    public void reshape(Vector3f pos, Vector3f size, Node child) {
+//        calculatePreferredSize(size, child);
 
         //TODO: REMOVE
 //        angle = FastMath.HALF_PI;
         //////////////////////
-
-        if(child == null) {
-            return;
-        }
 
         if(!reset) {
             child.setLocalRotation(child.getLocalRotation().fromAngleAxis(angle, Vector3f.UNIT_Z));
@@ -157,8 +152,8 @@ public class RotationLayout extends SingleChildLayout {
         }
 
         if(rotOriginX != 0 || rotOriginY != 0) {
-            float origX = -rotOriginX * lastPreferredSize.x / 100;
-            float origY = -rotOriginY * lastPreferredSize.y / 100;
+            float origX = -rotOriginX * size.x / 100;
+            float origY = -rotOriginY * size.y / 100;
 
             Vector3f translation = child.getLocalTranslation().set(origX, origY, 0);
             child.getLocalRotation().multLocal(translation).subtractLocal(origX, origY, 0);//.addLocal(pos);
@@ -178,6 +173,6 @@ public class RotationLayout extends SingleChildLayout {
 
 
 
-        child.getControl(GuiControl.class).setSize(lastPreferredSize);
+        child.getControl(GuiControl.class).setSize(size);
     }
 }
