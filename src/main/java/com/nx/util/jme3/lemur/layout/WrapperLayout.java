@@ -19,10 +19,6 @@ public class WrapperLayout extends SingleChildLayout {
 
     @Override
     public void reshape(Vector3f pos, Vector3f size, Node child) {
-        if(child == null) {
-            return;
-        }
-
         child.setLocalTranslation(pos);
         child.getControl(GuiControl.class).setSize(size);
     }
