@@ -43,7 +43,7 @@ public class ViewportPanel extends Panel {
 
     protected boolean autoZoom = true;
 
-    private Node rootNode;
+//    private Node rootNode;
 
     public ViewportPanel(AppStateManager stateManager, ElementId elementid, String style) {
         this(elementid, style);
@@ -211,7 +211,7 @@ public class ViewportPanel extends Panel {
         }
 
         if(rootParent != null) {
-            ViewportPanel.this.rootNode = rootParent;
+//            ViewportPanel.this.rootNode = rootParent;
             rootParent.addControl(new AbstractControl() {
                 @Override
                 protected void controlUpdate(float tpf) {
@@ -255,7 +255,7 @@ public class ViewportPanel extends Panel {
     }
 
     private void close() {
-        LoggerFactory.getLogger(this.getClass()).debug("Closing viewport panel");
+//        LoggerFactory.getLogger(this.getClass()).debug("Closing viewport panel");
 
         clearViewport();
 //        renderManager.removePostView(viewport);
@@ -298,7 +298,7 @@ public class ViewportPanel extends Panel {
             return;
         }
 
-        LoggerFactory.getLogger(this.getClass()).debug("VIEWPORT SIZE: {}", size);
+//        LoggerFactory.getLogger(this.getClass()).debug("VIEWPORT SIZE: {}", size);
 
 //        Vector2f aux2f = new Vector2f();
         Vector3f aux3f = Vector3f.UNIT_Z.negate();
@@ -350,6 +350,10 @@ public class ViewportPanel extends Panel {
     public void attachScene(Spatial spatial) {
         viewPortNode.detachAllChildren();
         viewPortNode.attachChild(spatial);
-        LoggerFactory.getLogger(this.getClass()).debug("Attaching to scene");
+//        LoggerFactory.getLogger(this.getClass()).debug("Attaching to scene");
+    }
+
+    public void detachScene() {
+        viewPortNode.detachAllChildren();
     }
 }
