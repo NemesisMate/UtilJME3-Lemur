@@ -11,4 +11,6 @@ dependencies {
 
     compile 'com.google.guava:guava:19.+'
     compile 'org.codehaus.groovy:groovy-all:2.4.+'
+
+    compile(get_module("UtilJME3-Base"))
 }

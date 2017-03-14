@@ -52,13 +52,18 @@ import com.simsilica.lemur.core.VersionedReference;
 import com.simsilica.lemur.event.KeyAction;
 import com.simsilica.lemur.event.KeyActionListener;
 import com.simsilica.lemur.grid.GridModel;
+import com.simsilica.lemur.input.AnalogFunctionListener;
+import com.simsilica.lemur.input.FunctionId;
 import com.simsilica.lemur.list.CellRenderer;
 import com.simsilica.lemur.list.DefaultCellRenderer;
 import com.simsilica.lemur.style.*;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -69,9 +74,13 @@ import java.util.List;
  */
 public class LemurConsole<T> extends Panel {
 
+    private static final Logger log = LoggerFactory.getLogger(LemurConsole.class);
+
     public enum MessageType {
         DEFAULT, CONSOLE, COMMAND;
     }
+
+    Map<MessageType, Command> messageCallbacks;
 
 
     public static final String ELEMENT_ID = "list";
@@ -114,7 +123,7 @@ public class LemurConsole<T> extends Panel {
 
     private ChatHistory chatHistory = new ChatHistory();
 
-    Command<ConsoleCommand> commandCallback;
+//    Command<ConsoleCommand> commandCallback;
 
     private float endMargin;
 
@@ -188,7 +197,7 @@ public class LemurConsole<T> extends Panel {
 
         textField.getActionMap().put(new KeyAction(0x00), submissionListener);
         textField.getActionMap().put(new KeyAction(KeyInput.KEY_NUMPADENTER), submissionListener);
-        
+
         
         textField.getActionMap().put(new KeyAction(KeyInput.KEY_RETURN), new KeyActionListener() {
             @Override
@@ -203,32 +212,54 @@ public class LemurConsole<T> extends Panel {
                     }
                 } else trimmedText = text.trim();
 //                if(!allowVoidSubmission && (text.length() == 0 || text.trim().length() == 0)) return;
-                
+
+                final MessageType messageType;
+                final Object callbackExec;
+
+
                 if(trimmedText.length() > 1 && trimmedText.charAt(0) == '/') {
                     String[] split = trimmedText.split(" ", 2);
                     String[] args = split.length > 1 ? split[1].split(" ") : new String[0];
 
-                    sendConsoleMessage(trimmedText, MessageType.COMMAND);
+                    messageType = MessageType.COMMAND;
+                    callbackExec = new ConsoleCommand(split[0].replaceFirst(commandPrefix, ""), args);
+//                    sendConsoleMessage(trimmedText, MessageType.COMMAND);
 //                    LemurGuiModule.getInstance().getCommandManager().execute(commandSender, split[0].replaceFirst("/", ""), args);
-
-                    if(commandCallback != null) {
-                        commandCallback.execute(new ConsoleCommand(split[0].replaceFirst(commandPrefix, ""), args));
-                    } else {
-                        LoggerFactory.getLogger(this.getClass()).warn("No callback specified for console commands.");
-                    }
 
                     if(commandsToHistory) {
                         chatHistory.addToHistory(trimmedText);
                     }
 
+
+
 //                    model.add((T) (consoleDefaultPrefix + prefixSeparator + trimmedText));
                 } else {
+                    messageType = MessageType.CONSOLE;
+                    callbackExec = trimmedText;
+
                     chatHistory.addToHistory(trimmedText);
 
-                    sendConsoleMessage(trimmedText, MessageType.CONSOLE);
+
+
+//                    sendConsoleMessage(trimmedText, MessageType.CONSOLE);
 //                    model.add((T) (consoleDefaultPrefix + prefixSeparator + trimmedText));
 //                    sendMessage(trimmedText);
                 }
+
+
+
+                sendConsoleMessage(trimmedText, messageType);
+
+                Command callback = getCallback(messageType);
+                if (callback != null) {
+                    callback.execute(callbackExec);
+                } else {
+                    if(log.isWarnEnabled()) {
+                        log.warn("No callback specified for console messages of type: {}.", messageType);
+                    }
+                }
+
+
 
 //                model.add((T) (consoleDefaultPrefix + prefixSeparator + trimmedText));
                 
@@ -257,8 +288,37 @@ public class LemurConsole<T> extends Panel {
                 System.out.println("DOWN - asdf");
             }
         });
-        
-        
+
+
+
+
+
+//        CursorEventControl.addListenersToSpatial(this, new DefaultCursorListener() {
+//            @Override
+//            public void cursorMoved(CursorMotionEvent event, Spatial target, Spatial capture) {
+//                System.out.println("SCROLLING DELTA: " + event.getScrollDelta() + ", value: " + event.getScrollValue());
+//                if(event.getScrollDelta() != 0) {
+//                    if( event.getScrollDelta() > 0 ) {
+//                        scroll(Math.max(1, event.getScrollDelta() / 120));
+//                    } else {
+//                        scroll(Math.min(-1, event.getScrollDelta() / 120));
+//                    }
+//                }
+//            }
+//        });
+
+        //TODO: replace by a grid-hovered listener. This would allow a second listener on the input textfield to scroll through the history.
+        FunctionId f = new FunctionId("bleebleblee");
+        GuiGlobals.getInstance().getInputMapper().map(f, com.simsilica.lemur.input.Axis.MOUSE_WHEEL);
+        GuiGlobals.getInstance().getInputMapper().addAnalogListener(new AnalogFunctionListener() {
+            @Override
+            public void valueActive(FunctionId func, double value, double tpf) {
+                scroll(value);
+            }
+        }, f);
+
+
+
         
 //        grid.get
         
@@ -275,6 +335,14 @@ public class LemurConsole<T> extends Panel {
 
         setModel(model);                
         resetModelRange(); 
+    }
+
+    private Command getCallback(MessageType type) {
+        if(messageCallbacks != null) {
+            return messageCallbacks.get(type);
+        }
+
+        return null;
     }
 
     public void setAllowVoidSubmission(boolean allowVoidSubmition) {
@@ -305,8 +373,18 @@ public class LemurConsole<T> extends Panel {
 //        this.commandSender = commandSender;
 //    }
 
+    public void setCallback(MessageType type, Command callbackCommand) {
+        if(messageCallbacks == null) {
+            messageCallbacks = new EnumMap<MessageType, Command>(MessageType.class);
+        }
+
+        messageCallbacks.put(type, callbackCommand);
+    }
+
+    @Deprecated
     public void setCommandCallback(Command<ConsoleCommand> commandCallback) {
-        this.commandCallback = commandCallback;
+//        this.commandCallback = commandCallback;
+        setCallback(MessageType.COMMAND, commandCallback);
     }
 
     //TODO: make an enum to say which kind of message to send, instead of a method for every one of it.
@@ -365,7 +443,9 @@ public class LemurConsole<T> extends Panel {
         if(widthLimit == endMargin) {
             widthLimit = grid.getPreferredSize().getX();
             if(widthLimit == endMargin) {
-                LoggerFactory.getLogger(this.getClass()).trace("The console hasn't got any size, so no wrap can be performed.");
+                if(log.isTraceEnabled()) {
+                    log.trace("The console hasn't got any size, so no wrap can be performed.");
+                }
                 model.add((T) (finalMessage));
                 return;
             }
@@ -402,10 +482,15 @@ public class LemurConsole<T> extends Panel {
         startIndex = i * messagesLength;
         messages[i] = finalMessage.substring(startIndex, finalLength);
 
-        LoggerFactory.getLogger(this.getClass()).debug("Wrapped: {}, into: {}.", finalMessage, Arrays.toString(messages));
-        for(String message : messages) {
-            LoggerFactory.getLogger(this.getClass()).debug("Wr: {}", message);
+        if(log.isDebugEnabled()) {
+            log.debug("Wrapped: {}, into: {}.", finalMessage, Arrays.toString(messages));
+
+            for(String message : messages) {
+                log.debug("Wr: {}", message);
+            }
         }
+
+
 
         return messages;
     }
@@ -415,6 +500,10 @@ public class LemurConsole<T> extends Panel {
 //        chatHistory.addToHistory(message);
         sendConsoleMessage(message, MessageType.DEFAULT);
         
+    }
+
+    public void scroll(double amount) {
+        baseIndex.setValue(baseIndex.getValue() + amount);
     }
     
     public void scrollToBottom() {
@@ -446,7 +535,7 @@ public class LemurConsole<T> extends Panel {
         boolean indexUpdate = indexRef.update();
 //        boolean selectionUpdate = selectionRef.update();         
         if( indexUpdate ) {
-            System.out.println("2: MIN: " + baseIndex.getMinimum() + " VALUE: " + baseIndex.getValue() + " MAX: " + baseIndex.getMaximum());
+//            System.out.println("2: MIN: " + baseIndex.getMinimum() + " VALUE: " + baseIndex.getValue() + " MAX: " + baseIndex.getMaximum());
 //            System.out.println("MAX: " + maxIndex + "BASE: " + baseIndex.getValue());
             int index = (int)(maxIndex - baseIndex.getValue());
             grid.setRow(index);

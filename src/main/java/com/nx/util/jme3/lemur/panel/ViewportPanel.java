@@ -17,13 +17,13 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import com.nx.util.jme3.base.SpatialAutoManager;
 import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.core.AbstractGuiControlListener;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.event.BasePickState;
 import com.simsilica.lemur.event.PickState;
 import com.simsilica.lemur.style.ElementId;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -65,11 +65,26 @@ public class ViewportPanel extends Panel {
             }
         });
 
+        addControl(new SpatialAutoManager() {
+
+            @Override
+            public void onAttached() {
+                open();
+            }
+
+            @Override
+            public void onDetached() {
+                close();
+            }
+        });
+
         addControl(new AbstractControl() {
             @Override
             protected void controlUpdate(float tpf) {
 
-                if(viewport != null) {
+//                if(viewport == null) {
+//                    open();
+//                }
 
 //                    Vector3f size = ViewportPanel.this.getSize();
 ////                    LoggerFactory.getLogger(this.getClass()).debug("Size: {}.", size);
@@ -78,42 +93,42 @@ public class ViewportPanel extends Panel {
 //                        setViewPortSize(lastSize);
 //                    }
 
-                    viewPortNode.updateLogicalState(tpf);
+                viewPortNode.updateLogicalState(tpf);
 
-                    if(autoZoom) {
-                        
-                        if(viewPortNode.getQuantity() > 0) {
-                            
-                            Spatial child = viewPortNode.getChild(0);
-                            viewPortNode.updateModelBound();
+                if(autoZoom) {
 
-                            //FIXME: When rotating, the bounds dimension can change, making the y be bigger than the x or z and viceverse, showing an undesired zoom-in-out effect.
-                            BoundingBox bb = (BoundingBox) child.getWorldBound();
-                            if (bb != null) {
-                                float x = bb.getXExtent();
-                                float y = bb.getYExtent();
-                                float z = bb.getZExtent();
+                    if(viewPortNode.getQuantity() > 0) {
 
+                        Spatial child = viewPortNode.getChild(0);
+                        viewPortNode.updateModelBound();
 
-                                float dimensions;
-
-                                float bigger = x;
-
-                                if(z > bigger) {
-                                    bigger = z;
-                                }
-
-                                if (y > bigger) {
-                                    bigger = y;
-                                    dimensions = cam.getFrustumTop() - cam.getFrustumBottom();
-                                } else {
-                                    dimensions = cam.getFrustumRight() - cam.getFrustumLeft();
-                                }
+                        //FIXME: When rotating, the bounds dimension can change, making the y be bigger than the x or z and viceverse, showing an undesired zoom-in-out effect.
+                        BoundingBox bb = (BoundingBox) child.getWorldBound();
+                        if (bb != null) {
+                            float x = bb.getXExtent();
+                            float y = bb.getYExtent();
+                            float z = bb.getZExtent();
 
 
+                            float dimensions;
 
-                                // Teoria de los triangulos semejantes
-                                float distance = (bigger * cam.getFrustumNear()) / (dimensions / 2f);
+                            float bigger = x;
+
+                            if(z > bigger) {
+                                bigger = z;
+                            }
+
+                            if (y > bigger) {
+                                bigger = y;
+                                dimensions = cam.getFrustumTop() - cam.getFrustumBottom();
+                            } else {
+                                dimensions = cam.getFrustumRight() - cam.getFrustumLeft();
+                            }
+
+
+
+                            // Teoria de los triangulos semejantes
+                            float distance = (bigger * cam.getFrustumNear()) / (dimensions / 2f);
 
 //                                LoggerFactory.getLogger(this.getClass()).debug("BB center: {}, extents: {}, frustums: [b:{}, t:{}, r:{}, l:{}]distance: {}.",
 //                                        bb.getCenter(),
@@ -126,20 +141,18 @@ public class ViewportPanel extends Panel {
 
 
 
-                                //TODO: Set the correct equation in relation with origin to know the perfect cam distance.
-                                camOffset.set(bb.getCenter()).addLocal(camOrigin).addLocal(0, 0, distance + bigger);
-                                if (!cam.getLocation().equals(camOffset)) {
+                            //TODO: Set the correct equation in relation with origin to know the perfect cam distance.
+                            camOffset.set(bb.getCenter()).addLocal(camOrigin).addLocal(0, 0, distance + bigger);
+                            if (!cam.getLocation().equals(camOffset)) {
 //                                    LoggerFactory.getLogger(this.getClass()).debug("Setting cam location: {}.", camOffset);
-                                    //TODO: Smooth this movement.
-                                    cam.setLocation(camOffset);
-                                }
+                                //TODO: Smooth this movement.
+                                cam.setLocation(camOffset);
                             }
                         }
                     }
-
-                    viewPortNode.updateGeometricState();
-
                 }
+
+                viewPortNode.updateGeometricState();
 //                else {
 
 //                    open();
@@ -203,56 +216,58 @@ public class ViewportPanel extends Panel {
         stateManager.getState(BasePickState.class).addCollisionRoot(viewPortNode, viewport, PickState.PICK_LAYER_GUI);
 
         // Ensure that it gets closed when it is detached from the scenegraph.
-        Node rootParent = null;
-        Node parent = getParent();
-        while(parent != null) {
-            rootParent = parent;
-            parent = parent.getParent();
-        }
-
-        if(rootParent != null) {
-//            ViewportPanel.this.rootNode = rootParent;
-            rootParent.addControl(new AbstractControl() {
-                @Override
-                protected void controlUpdate(float tpf) {
-                    Node rootParent = null;
-                    Node parent = ViewportPanel.this.getParent();
-                    while(parent != null) {
-                        rootParent = parent;
-                        parent = parent.getParent();
-                    }
-
-                    if(rootParent != spatial) {
-                        close();
-                        spatial.removeControl(this);
-                    }
-                }
-
-                @Override
-                public void setSpatial(Spatial spatial) {
-
-
-                    if(spatial == null) {
-                        if(viewport != null) {
-                            LoggerFactory.getLogger(this.getClass()).warn("Shouldn't be removing this control manually!");
-//                                        this.spatial.addControl(this); // Readd??, or just better let the developer see problem.
-                        }
-//                                    close();
-                    }
-
-                    super.setSpatial(spatial);
-                }
-
-                @Override
-                protected void controlRender(RenderManager rm, ViewPort vp) {
-
-                }
-            });
-
-        }
-
-
+//        Node rootParent = null;
+//        Node parent = getParent();
+//        while(parent != null) {
+//            rootParent = parent;
+//            parent = parent.getParent();
+//        }
+//
+//        if(rootParent != null) {
+////            ViewportPanel.this.rootNode = rootParent;
+//            rootParent.addControl(new AbstractControl() {
+//                @Override
+//                protected void controlUpdate(float tpf) {
+//                    Node rootParent = null;
+//                    Node parent = ViewportPanel.this.getParent();
+//                    while(parent != null) {
+//                        rootParent = parent;
+//                        parent = parent.getParent();
+//                    }
+//
+//                    if(rootParent != spatial) {
+//                        close();
+//                        spatial.removeControl(this);
+//                    }
+//                }
+//
+//                @Override
+//                public void setSpatial(Spatial spatial) {
+//
+//
+//                    if(spatial == null) {
+//                        if(viewport != null) {
+//                            LoggerFactory.getLogger(this.getClass()).warn("Shouldn't be removing this control manually!");
+////                                        this.spatial.addControl(this); // Re-add??, or just better let the developer see the problem.
+//                        }
+////                                    close();
+//                    }
+//
+//                    super.setSpatial(spatial);
+//                }
+//
+//                @Override
+//                protected void controlRender(RenderManager rm, ViewPort vp) {
+//
+//                }
+//            });
+//
+//        }
     }
+
+
+
+
 
     private void close() {
 //        LoggerFactory.getLogger(this.getClass()).debug("Closing viewport panel");

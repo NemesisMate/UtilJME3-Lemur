@@ -1,3 +1,5 @@
 apply from: '../subSettings.gradle'
 
+include_module("UtilJME3-Base")
+
 rootProject.name = 'UtilJME3-Lemur'
