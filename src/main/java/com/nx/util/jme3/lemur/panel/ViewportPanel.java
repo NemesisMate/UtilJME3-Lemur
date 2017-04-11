@@ -30,6 +30,9 @@ import com.simsilica.lemur.style.ElementId;
  * @author xelun
  */
 public class ViewportPanel extends Panel {
+
+    public static final String ELEMENT_ID = "viewportPanel";
+
     protected ViewPort viewport;
     protected Node viewPortNode;
 //    protected Vector3f lastSize = new Vector3f();
@@ -45,6 +48,15 @@ public class ViewportPanel extends Panel {
 
 //    private Node rootNode;
 
+
+    public ViewportPanel(AppStateManager stateManager) {
+        this(stateManager, new ElementId(ELEMENT_ID), null);
+    }
+
+    public ViewportPanel(AppStateManager stateManager, String style) {
+        this(stateManager, new ElementId(ELEMENT_ID), style);
+    }
+
     public ViewportPanel(AppStateManager stateManager, ElementId elementid, String style) {
         this(elementid, style);
 
@@ -53,6 +65,7 @@ public class ViewportPanel extends Panel {
 
     public ViewportPanel(ElementId elementid, String style) {
         super(elementid, style);
+
         viewPortNode = new Node("Root Node ViewPort Panel");
 
 //        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value. Try with setSize instead?
