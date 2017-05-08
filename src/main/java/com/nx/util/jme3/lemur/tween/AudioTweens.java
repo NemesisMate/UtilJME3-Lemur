@@ -52,7 +52,4 @@ public final class AudioTweens {
             target.setVolume(value);
         }
     }
-
-
-
 }
