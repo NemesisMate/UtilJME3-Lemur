@@ -113,6 +113,10 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
         return Collections.singletonList(child);
     }
 
+    public Node getChild() {
+        return child;
+    }
+
     public void clearChildren() {
         if( parent != null ) {
             Node parentNode = parent.getNode();

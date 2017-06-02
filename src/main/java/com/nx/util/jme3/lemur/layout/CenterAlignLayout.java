@@ -2,6 +2,7 @@ package com.nx.util.jme3.lemur.layout;
 
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import com.simsilica.lemur.FillMode;
 import com.simsilica.lemur.HAlignment;
 import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.VAlignment;
@@ -14,6 +15,16 @@ public class CenterAlignLayout extends SingleChildLayout {
 
     HAlignment hAlignment;
     VAlignment vAlignment;
+
+    //TODO: is this necessary and fine?, couldn't just make it non-proportional and add a proportional-springgridlayout container inside?
+
+    FillMode fillModeX = FillMode.Proportional;
+    FillMode fillModeY = FillMode.Proportional;
+
+
+//    boolean proportional = true;
+//    boolean expandX =
+
 
     public CenterAlignLayout() {
         this(HAlignment.Center, VAlignment.Center);
@@ -72,7 +83,9 @@ public class CenterAlignLayout extends SingleChildLayout {
 
     @Override
     protected void calculatePreferredSize(Vector3f size, Node child) {
-
+        if(child instanceof Panel) {
+            size.set(((Panel) child).getPreferredSize());
+        }
     }
 
     @Override
@@ -83,8 +96,30 @@ public class CenterAlignLayout extends SingleChildLayout {
             GuiControl guiControl = child.getControl(GuiControl.class);
             Vector3f applySize = guiControl.getSize(); // WARNING!: If the implementation changes, this could fail, if is the case, instantiate here a new vector.
 
-            applySize.x = size.x * prefSize.x / 100f;
-            applySize.y = size.y * prefSize.y / 100f;
+            switch (fillModeX) {
+                case Proportional:
+                    applySize.x = size.x * prefSize.x / 100f;
+                    break;
+                case None:
+                    applySize.x = prefSize.x;
+                    break;
+                default:
+                    applySize.x = size.x;
+                    break;
+
+            }
+
+            switch (fillModeY) {
+                case Proportional:
+                    applySize.y = size.y * prefSize.y / 100f;
+                    break;
+                case None:
+                    applySize.y = prefSize.y;
+                    break;
+                default:
+                    applySize.y = size.y;
+                    break;
+            }
 
             guiControl.setSize(applySize);
 
@@ -118,4 +153,19 @@ public class CenterAlignLayout extends SingleChildLayout {
         }
     }
 
+    public FillMode getFillModeX() {
+        return fillModeX;
+    }
+
+    public void setFillModeX(FillMode fillModeX) {
+        this.fillModeX = fillModeX;
+    }
+
+    public FillMode getFillModeY() {
+        return fillModeY;
+    }
+
+    public void setFillModeY(FillMode fillModeY) {
+        this.fillModeY = fillModeY;
+    }
 }
