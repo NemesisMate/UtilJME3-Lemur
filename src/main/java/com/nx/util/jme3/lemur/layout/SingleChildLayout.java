@@ -58,16 +58,32 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
         if( n.getControl( GuiControl.class ) == null )
             throw new IllegalArgumentException( "Child is not GUI element." );
         if( constraints != null && constraints.length > 0 )
-            throw new IllegalArgumentException( "Tri layout does not take constraints." );
+            throw new IllegalArgumentException( "Single layout does not take constraints." );
 
         if(child != null) {
-            throw new IllegalArgumentException( "Rotation layout does not take more than 1 child." );
+            throw new IllegalArgumentException( "Single layout does not take more than 1 child." );
         }
 
         child = n;
 
         if( parent != null ) {
             // We are attached
+            parent.getNode().attachChild(n);
+        }
+
+        invalidate();
+        return n;
+    }
+
+    public <T extends Node> T setChild(T n) {
+        Node c = child;
+        child = n;
+
+        if(parent != null) {
+            if(c != null) {
+                parent.getNode().detachChild(c);
+            }
+
             parent.getNode().attachChild(n);
         }
 
