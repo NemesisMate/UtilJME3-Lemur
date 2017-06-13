@@ -60,6 +60,10 @@ public final class LemurHelper {
         return parent;
     }
 
+    public static <T extends Panel> T addChild(Container container, T child) {
+        container.addChild(child);
+        return child;
+    }
 
     public static <T extends Panel> T addChild(Container container, T child, float x, float y, float top, float left, float bottom, float right) {
         return addChild(container, child, new Vector3f(x, y, 1), new Insets3f(top, left, bottom, right));

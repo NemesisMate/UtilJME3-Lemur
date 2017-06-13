@@ -27,20 +27,41 @@ public class CenterAlignLayout extends SingleChildLayout {
 
 
     public CenterAlignLayout() {
-        this(HAlignment.Center, VAlignment.Center);
+        this(HAlignment.Center, VAlignment.Center, FillMode.Proportional, FillMode.Proportional);
     }
 
     public CenterAlignLayout(HAlignment hAlignment) {
-        this(hAlignment, VAlignment.Center);
+        this(hAlignment, VAlignment.Center, FillMode.Proportional, FillMode.Proportional);
     }
 
     public CenterAlignLayout(VAlignment vAlignment) {
-        this(HAlignment.Center, vAlignment);
+        this(HAlignment.Center, vAlignment, FillMode.Proportional, FillMode.Proportional);
+    }
+
+    public CenterAlignLayout(HAlignment hAlignment, FillMode fillModeX, FillMode fillModeY) {
+        this(hAlignment, VAlignment.Center, fillModeX, fillModeY);
+    }
+
+    public CenterAlignLayout(VAlignment vAlignment, FillMode fillModeX, FillMode fillModeY) {
+        this(HAlignment.Center, vAlignment, fillModeX, fillModeY);
     }
 
     public CenterAlignLayout(HAlignment hAlignment, VAlignment vAlignment) {
+        this(hAlignment, vAlignment, FillMode.Proportional, FillMode.Proportional);
+    }
+
+    public CenterAlignLayout(FillMode fillModeX, FillMode fillModeY) {
+        this(HAlignment.Center, VAlignment.Center);
+
+        this.fillModeX = fillModeX;
+        this.fillModeY = fillModeY;
+    }
+
+    public CenterAlignLayout(HAlignment hAlignment, VAlignment vAlignment, FillMode fillModeX, FillMode fillModeY) {
         this.hAlignment = hAlignment;
         this.vAlignment = vAlignment;
+        this.fillModeX = fillModeX;
+        this.fillModeY = fillModeY;
     }
 
     public HAlignment gethAlignment() {
