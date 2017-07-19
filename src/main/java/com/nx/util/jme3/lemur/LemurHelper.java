@@ -1,8 +1,12 @@
 package com.nx.util.jme3.lemur;
 
+import com.jme3.app.state.AppStateManager;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.nx.util.jme3.lemur.layout.CenterAlignLayout;
 import com.nx.util.jme3.lemur.layout.WrapperLayout;
+import com.nx.util.jme3.lemur.panel.ViewportPanel;
+import com.nx.util.jme3.lemur.panel.ViewportPanel2D;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Insets3f;
 import com.simsilica.lemur.Panel;
@@ -10,10 +14,13 @@ import com.simsilica.lemur.anim.Animation;
 import com.simsilica.lemur.anim.PanelTweens;
 import com.simsilica.lemur.anim.TweenAnimation;
 import com.simsilica.lemur.anim.Tweens;
+import com.simsilica.lemur.core.AbstractGuiControlListener;
+import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiLayout;
 import com.simsilica.lemur.effect.AbstractEffect;
 import com.simsilica.lemur.effect.Effect;
 import com.simsilica.lemur.effect.EffectInfo;
+import com.simsilica.lemur.style.ElementId;
 
 /**
  * Created by NemesisMate on 15/05/17.
@@ -137,5 +144,69 @@ public final class LemurHelper {
         panel.setInsets(new Insets3f(top, left, bottom, right));
         return panel;
     }
+
+    public static <T extends Panel> T setInsets(T panel, float topBottom, float leftRight) {
+        return setInsets(panel, topBottom, leftRight, topBottom, leftRight);
+    }
+
+    public static <T extends Panel> T setInsets(T panel, float topBottomLeftRight) {
+        return setInsets(panel, topBottomLeftRight, topBottomLeftRight, topBottomLeftRight, topBottomLeftRight);
+    }
+
+    public static <T extends Panel> T addToPanel(Panel parent, T child) {
+        return addToPanel(parent, child, Vector3f.ZERO);
+    }
+
+    public static <T extends Panel> T addToPanel(Panel parent, T child, Vector3f offset) {
+        Node node = new Node();
+        parent.attachChild(node);
+        node.attachChild(child);
+
+        node.setLocalTranslation(offset);
+
+        child.move(0, 0, 1);
+
+        return child;
+    }
+
+    public static <T extends Panel> T addLayerToPanel(Panel parent, final T layer) {
+        Node node = new Node();
+        parent.attachChild(node);
+        node.attachChild(layer);
+
+        layer.move(0, 0, 1);
+
+        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                layer.setPreferredSize(layer.getPreferredSize().set(size));
+            }
+        });
+
+        return layer;
+    }
+
+    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
+        Node node = new Node();
+        parent.attachChild(node);
+
+        final ViewportPanel viewportPanel = new ViewportPanel2D(stateManager, new ElementId("Layer"), null);
+        viewportPanel.attachScene(layer);
+
+        node.attachChild(viewportPanel);
+
+        layer.move(0, 0, 1);
+
+        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                viewportPanel.setPreferredSize(viewportPanel.getPreferredSize().set(size));
+                layer.setPreferredSize(layer.getPreferredSize().set(size));
+            }
+        });
+
+        return layer;
+    }
+
 
 }

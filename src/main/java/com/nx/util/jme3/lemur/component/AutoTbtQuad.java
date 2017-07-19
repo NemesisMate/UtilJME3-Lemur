@@ -3,7 +3,7 @@ package com.nx.util.jme3.lemur.component;
 import com.jme3.math.Vector2f;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer;
-import com.nx.util.jme3.base.Vector8f;
+import com.nx.util.jme3.base.math.Vector8f;
 
 /**
  * @author NemesisMate, based on Paul Speed's TbtQuad.

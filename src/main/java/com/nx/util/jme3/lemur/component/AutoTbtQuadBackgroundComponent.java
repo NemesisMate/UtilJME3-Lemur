@@ -41,7 +41,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
-import com.nx.util.jme3.base.Vector8f;
+import com.nx.util.jme3.base.math.Vector8f;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.component.AbstractGuiComponent;
 import com.simsilica.lemur.component.ColoredComponent;
