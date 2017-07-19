@@ -2,6 +2,7 @@ package com.nx.util.jme3.lemur;
 
 import com.jme3.app.state.AppStateManager;
 import com.jme3.math.Vector3f;
+import com.jme3.math.Vector4f;
 import com.jme3.scene.Node;
 import com.nx.util.jme3.lemur.layout.CenterAlignLayout;
 import com.nx.util.jme3.lemur.layout.WrapperLayout;
@@ -14,6 +15,7 @@ import com.simsilica.lemur.anim.Animation;
 import com.simsilica.lemur.anim.PanelTweens;
 import com.simsilica.lemur.anim.TweenAnimation;
 import com.simsilica.lemur.anim.Tweens;
+import com.simsilica.lemur.component.InsetsComponent;
 import com.simsilica.lemur.core.AbstractGuiControlListener;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiLayout;
@@ -165,6 +167,42 @@ public final class LemurHelper {
         node.setLocalTranslation(offset);
 
         child.move(0, 0, 1);
+
+        return child;
+    }
+
+    /**
+     * Attaches a panel to another one given their attachment points.
+     * @param parent
+     * @param child
+     * @param offsetPercent x,y => point in the parent panel where to attach the child. z, w => point in the child panel to be attached from.
+     * @param <T>
+     * @return the given child.
+     */
+    public static <T extends Panel> T addToPanelOffseted(final Panel parent, final T child, final Vector4f offsetPercent) {
+        addToPanel(parent, child);
+
+        child.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                super.reshape(source, pos, size);
+
+                Vector3f aux = source.getSpatial().getLocalTranslation();
+
+                InsetsComponent insetsComponent = parent.getInsetsComponent();
+                if(insetsComponent != null) {
+                    Vector3f position = new Vector3f();
+                    insetsComponent.reshape(position, aux.set(parent.getSize().x, parent.getSize().y, 1));
+
+                    aux.multLocal(offsetPercent.x, -offsetPercent.y, 1);
+                    aux.addLocal(position.x, position.y, 0);
+                } else {
+                    aux.multLocal(offsetPercent.x, -offsetPercent.y, 1);
+                }
+
+                source.getSpatial().setLocalTranslation(aux.subtractLocal(size.x * offsetPercent.z, -size.y * offsetPercent.w, -pos.z));
+            }
+        });
 
         return child;
     }
