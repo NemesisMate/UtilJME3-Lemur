@@ -4,6 +4,8 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.util.TempVars;
 import com.nx.util.jme3.lemur.layout.CenterAlignLayout;
 import com.nx.util.jme3.lemur.layout.WrapperLayout;
 import com.nx.util.jme3.lemur.panel.ViewportPanel;
@@ -187,20 +189,26 @@ public final class LemurHelper {
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 super.reshape(source, pos, size);
 
-                Vector3f aux = source.getSpatial().getLocalTranslation();
+                Spatial spatial = source.getSpatial();
+
+                Vector3f aux = spatial.getLocalTranslation().set(parent.getSize().x, parent.getSize().y, 1);
 
                 InsetsComponent insetsComponent = parent.getInsetsComponent();
                 if(insetsComponent != null) {
-                    Vector3f position = new Vector3f();
-                    insetsComponent.reshape(position, aux.set(parent.getSize().x, parent.getSize().y, 1));
+                    TempVars vars = TempVars.get();
+                    Vector3f position = vars.vect1;
+
+                    insetsComponent.reshape(position, aux);
 
                     aux.multLocal(offsetPercent.x, -offsetPercent.y, 1);
                     aux.addLocal(position.x, position.y, 0);
+
+                    vars.release();
                 } else {
                     aux.multLocal(offsetPercent.x, -offsetPercent.y, 1);
                 }
 
-                source.getSpatial().setLocalTranslation(aux.subtractLocal(size.x * offsetPercent.z, -size.y * offsetPercent.w, -pos.z));
+                spatial.setLocalTranslation(aux.subtractLocal(size.x * offsetPercent.z, -size.y * offsetPercent.w, -pos.z));
             }
         });
 
