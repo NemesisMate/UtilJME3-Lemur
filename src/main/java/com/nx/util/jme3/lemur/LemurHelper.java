@@ -181,8 +181,17 @@ public final class LemurHelper {
      * @param <T>
      * @return the given child.
      */
-    public static <T extends Panel> T addToPanelOffseted(final Panel parent, final T child, final Vector4f offsetPercent) {
+    public static <T extends Panel> T addToPanelPopuped(final Panel parent, final T child, final Vector4f offsetPercent) {
         addToPanel(parent, child);
+
+        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                super.reshape(source, pos, size);
+
+                child.getControl(GuiControl.class).invalidate();
+            }
+        });
 
         child.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
             @Override
