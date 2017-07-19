@@ -196,7 +196,7 @@ public final class LemurHelper {
                 InsetsComponent insetsComponent = parent.getInsetsComponent();
                 if(insetsComponent != null) {
                     TempVars vars = TempVars.get();
-                    Vector3f position = vars.vect1;
+                    Vector3f position = vars.vect1.set(Vector3f.ZERO);
 
                     insetsComponent.reshape(position, aux);
 
