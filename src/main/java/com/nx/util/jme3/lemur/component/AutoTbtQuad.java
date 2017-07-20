@@ -7,6 +7,18 @@ import com.nx.util.jme3.base.math.Vector8f;
 
 /**
  * @author NemesisMate, based on Paul Speed's TbtQuad.
+ *
+ * Coords in Vector8f are taken like:
+ *
+ * x -> x offset of bottom-left region's corner (offset origin: image bottom-left)
+ * y -> y offset of bottom-left region's corner (offset origin: image bottom-left)
+ * z -> image region's width.
+ * w -> image region's height.
+ * r == x1 -> x offset of bottom-left region's inner corner (offset origin: region bottom-left)
+ * g == y1 -> y offset of bottom-left region's inner corner (offset origin: region bottom-left)
+ * b == x2 -> x offset of top-right region's inner corner (offset origin: region bottom-left)
+ * a == y2 -> y offset of top-right region's inner corner (offset origin: region bottom-left)
+ *
  * @see com.simsilica.lemur.geom.TbtQuad
  */
 public class AutoTbtQuad extends Mesh
