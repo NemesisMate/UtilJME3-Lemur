@@ -174,6 +174,8 @@ public final class LemurHelper {
     }
 
     /**
+     * WARNING: Can't currently be undone.
+     *
      * Attaches a panel to another one given their attachment points.
      * @param parent
      * @param child
@@ -196,6 +198,95 @@ public final class LemurHelper {
         });
 
         return child;
+    }
+
+    /**
+     * WARNING: Can't currently be undone.
+     *
+     * @param parent
+     * @param layer
+     * @param <T>
+     * @return
+     */
+    public static <T extends Panel> T addLayerToPanel(Panel parent, final T layer) {
+        return addLayerToPanel(parent, layer, Vector3f.UNIT_XYZ);
+    }
+
+    /**
+     * WARNING: Can't currently be undone.
+     *
+     * @param parent
+     * @param layer
+     * @param scale
+     * @param <T>
+     * @return
+     */
+    public static <T extends Panel> T addLayerToPanel(Panel parent, T layer, Vector3f scale) {
+        addToPanel(parent, layer);
+
+        addLayerListeners(parent, layer, scale);
+
+        return layer;
+    }
+
+    /**
+     * WARNING: Can't currently be undone.
+     *
+     * @param parent
+     * @param layer
+     * @param offsetPercent
+     * @param <T>
+     * @return
+     */
+    public static <T extends Panel> T addLayerToPanel(Panel parent, T layer, Vector4f offsetPercent) {
+        return addLayerToPanel(parent, layer, Vector3f.UNIT_XYZ, offsetPercent);
+    }
+
+    /**
+     * WARNING: Can't currently be undone.
+     *
+     * @param parent
+     * @param layer
+     * @param scale
+     * @param offsetPercent
+     * @param <T>
+     * @return
+     */
+    public static <T extends Panel> T addLayerToPanel(Panel parent, T layer, Vector3f scale, Vector4f offsetPercent) {
+        addToPanel(parent, layer);
+
+        addLayerListeners(parent, layer, scale);
+        addPopupListeners(parent, layer, offsetPercent);
+
+        return layer;
+    }
+
+    /**
+     * WARNING: Can't currently be undone.
+     *
+     * @param parent
+     * @param layer
+     * @param stateManager
+     * @param <T>
+     * @return
+     */
+    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
+        final ViewportPanel viewportPanel = new ViewportPanel2D(stateManager, new ElementId("Layer"), null);
+        viewportPanel.attachScene(layer);
+
+        addToPanel(parent, viewportPanel);
+
+        layer.move(0, 0, 1);
+
+        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                viewportPanel.setPreferredSize(viewportPanel.getPreferredSize().set(size));
+                layer.setPreferredSize(layer.getPreferredSize().set(size));
+            }
+        });
+
+        return layer;
     }
 
     private static void addPopupListeners(final Panel parent, final Panel child, final Vector4f offsetPercent) {
@@ -228,18 +319,6 @@ public final class LemurHelper {
         });
     }
 
-    public static <T extends Panel> T addLayerToPanel(Panel parent, final T layer) {
-        return addLayerToPanel(parent, layer, Vector3f.UNIT_XYZ);
-    }
-
-    public static <T extends Panel> T addLayerToPanel(Panel parent, T layer, Vector3f scale) {
-        addToPanel(parent, layer);
-
-        addLayerListeners(parent, layer, scale);
-
-        return layer;
-    }
-
     private static void addLayerListeners(final Panel parent, final Panel layer, final Vector3f scale) {
         parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
             @Override
@@ -262,28 +341,5 @@ public final class LemurHelper {
             }
         });
     }
-
-    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
-        Node node = new Node();
-        parent.attachChild(node);
-
-        final ViewportPanel viewportPanel = new ViewportPanel2D(stateManager, new ElementId("Layer"), null);
-        viewportPanel.attachScene(layer);
-
-        node.attachChild(viewportPanel);
-
-        layer.move(0, 0, 1);
-
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
-            @Override
-            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
-                viewportPanel.setPreferredSize(viewportPanel.getPreferredSize().set(size));
-                layer.setPreferredSize(layer.getPreferredSize().set(size));
-            }
-        });
-
-        return layer;
-    }
-
 
 }
