@@ -12,6 +12,7 @@ import com.nx.util.jme3.lemur.panel.ViewportPanel;
 import com.nx.util.jme3.lemur.panel.ViewportPanel2D;
 import com.simsilica.lemur.Container;
 import com.simsilica.lemur.Insets3f;
+import com.simsilica.lemur.LayerComparator;
 import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.anim.Animation;
 import com.simsilica.lemur.anim.PanelTweens;
@@ -69,6 +70,10 @@ public final class LemurHelper {
         }
 
         return parent;
+    }
+
+    public static ElementId childId(Container parent, String id) {
+        return parent.getElementId().child(id);
     }
 
     public static <T extends Panel> T addChild(Container container, T child) {
@@ -340,6 +345,19 @@ public final class LemurHelper {
                 layer.setLocalTranslation(position.addLocal(-(prefSize.x - x) / 2f, (prefSize.y - y) / 2f, 0));
             }
         });
+    }
+
+
+
+    public static void layerAlign(Panel parent, Panel child, boolean front) {
+        Integer layer = LayerComparator.getLayer(parent);
+
+        int offset = front ? 1 : -1;
+        if(layer != null) {
+            LayerComparator.setLayer(child, layer + offset);
+        }
+
+        child.getLocalTranslation().setZ(parent.getLocalTranslation().getZ() + offset);
     }
 
 }
