@@ -84,7 +84,9 @@ public abstract class SingleChildLayout extends AbstractGuiComponent
                 parent.getNode().detachChild(c);
             }
 
-            parent.getNode().attachChild(n);
+            if(n != null) {
+                parent.getNode().attachChild(n);
+            }
         }
 
         invalidate();
