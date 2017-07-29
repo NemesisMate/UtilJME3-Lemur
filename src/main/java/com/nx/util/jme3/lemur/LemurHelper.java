@@ -329,7 +329,7 @@ public final class LemurHelper {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 Vector3f prefSize = layer.getPreferredSize().set(size);
-                Vector3f position = layer.getLocalTranslation();
+                Vector3f position = layer.getLocalTranslation().set(0, 0, pos.z + 1);
 
                 InsetsComponent insetsComponent = ((Panel)source.getSpatial()).getInsetsComponent();
                 if(insetsComponent != null) {
