@@ -28,6 +28,14 @@ public class ViewportAppStatePickup extends ViewportAppState {
         GuiGlobals guiGlobals = GuiGlobals.getInstance();
         if(guiGlobals != null) {
             guiGlobals.setupGuiComparators(viewPort);
+        }
+    }
+
+    @Override
+    protected void onEnable() {
+        super.onEnable();
+
+        if(GuiGlobals.getInstance() != null) {
             PickState pickState = getState(PickState.class);
             pickState.addCollisionRoot(viewPort, PICK_LAYER_SCENEGUIOVERLAY);
 
@@ -37,14 +45,11 @@ public class ViewportAppStatePickup extends ViewportAppState {
         }
     }
 
-
-
     @Override
-    protected void cleanup(Application app) {
-        super.cleanup(app);
+    protected void onDisable() {
+        super.onDisable();
 
-        GuiGlobals guiGlobals = GuiGlobals.getInstance();
-        if(guiGlobals != null) {
+        if(GuiGlobals.getInstance() != null) {
             PickState pickState = getState(PickState.class);
             pickState.removeCollisionRoot(viewPort);
 
