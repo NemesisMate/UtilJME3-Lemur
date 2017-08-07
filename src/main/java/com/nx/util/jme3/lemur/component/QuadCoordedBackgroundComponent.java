@@ -262,7 +262,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     public void reshape( Vector3f pos, Vector3f size ) {
         refreshBackground(size);
 
-        background.setLocalTranslation(pos.x, pos.y - size.y, pos.z + zOffset);
+        background.setLocalTranslation(pos.x, pos.y - size.y, pos.z);
         pos.x += xMargin;
         pos.y -= yMargin;
         pos.z += zOffset;
