@@ -6,6 +6,7 @@ import com.jme3.math.Vector4f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.util.TempVars;
+import com.nx.util.jme3.base.SpatialAutoManager;
 import com.nx.util.jme3.lemur.layout.CenterAlignLayout;
 import com.nx.util.jme3.lemur.layout.WrapperLayout;
 import com.nx.util.jme3.lemur.panel.ViewportPanel;
@@ -167,9 +168,19 @@ public final class LemurHelper {
     }
 
     public static <T extends Panel> T addToPanel(Panel parent, T child, Vector3f offset) {
-        Node node = new Node();
+        final Node node = new Node();
         parent.attachChild(node);
         node.attachChild(child);
+
+        child.addControl(new SpatialAutoManager() {
+            @Override
+            public void onAttached() { }
+
+            @Override
+            public void onDetached() {
+                node.removeFromParent();
+            }
+        });
 
         node.setLocalTranslation(offset);
 
