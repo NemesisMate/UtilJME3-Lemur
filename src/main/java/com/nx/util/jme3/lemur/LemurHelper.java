@@ -178,7 +178,9 @@ public final class LemurHelper {
 
             @Override
             public void onDetached() {
-                node.removeFromParent();
+                if(spatial.getParent() == null) {
+                    node.removeFromParent();
+                }
             }
         });
 
