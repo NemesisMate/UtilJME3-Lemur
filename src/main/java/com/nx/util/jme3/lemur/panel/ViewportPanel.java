@@ -32,6 +32,7 @@ import com.simsilica.lemur.style.ElementId;
 public class ViewportPanel extends Panel {
 
     public static final String ELEMENT_ID = "viewportPanel";
+    public static final String NODE_DATA = "VPanel";
 
     protected ViewPort viewport;
     protected Node viewPortNode;
@@ -67,7 +68,7 @@ public class ViewportPanel extends Panel {
         super(elementid, style);
 
         viewPortNode = new Node("Root Node ViewPort Panel");
-        viewPortNode.setUserData("VPanel", this);
+        viewPortNode.setUserData(NODE_DATA, this);
 
 //        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value. Try with setSize instead?
 
@@ -334,7 +335,22 @@ public class ViewportPanel extends Panel {
 
         cam.lookAtDirection(aux3f, Vector3f.UNIT_Y);
 
-        Vector3f pos = this.getWorldTranslation();
+//        Vector3f pos = this.getWorldTranslation();
+
+        Vector3f pos = new Vector3f();
+        ViewportPanel viewportPanel = this;
+        while(viewportPanel != null) {
+            pos.addLocal(viewportPanel.getWorldTranslation());
+
+            Spatial root = viewportPanel;
+            Spatial parent = viewportPanel.getParent();
+            while (parent != null) {
+                root = parent;
+                parent = parent.getParent();
+            }
+
+            viewportPanel = root.getUserData(NODE_DATA);
+        }
 
 //        float h = Display.getHeight();
 //        float w = Display.getWidth();
