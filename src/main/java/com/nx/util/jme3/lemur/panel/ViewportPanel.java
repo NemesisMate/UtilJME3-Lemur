@@ -229,7 +229,8 @@ public class ViewportPanel extends Panel {
 
         setViewPort(renderManager.createPostView("viewportPanel", cam));
 
-        stateManager.getState(BasePickState.class).addCollisionRoot(viewPortNode, viewport, PickState.PICK_LAYER_GUI);
+        BasePickState pickState = stateManager.getState(BasePickState.class);
+        pickState.addCollisionRoot(viewPortNode, viewport, PickState.PICK_LAYER_GUI + pickState.getPickLayerOrder().length);
 
         // Ensure that it gets closed when it is detached from the scenegraph.
 //        Node rootParent = null;
