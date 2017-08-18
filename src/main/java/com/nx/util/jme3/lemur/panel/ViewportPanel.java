@@ -89,6 +89,12 @@ public class ViewportPanel extends Panel {
 
             @Override
             public void onDetached() {
+                ScenegraphAutoRemoverChecker checker = viewPortNode.getControl(ScenegraphAutoRemoverChecker.class);
+                while(checker != null) {
+                    checker.detach();
+                    checker = viewPortNode.getControl(ScenegraphAutoRemoverChecker.class);
+                }
+
                 close();
             }
         });
