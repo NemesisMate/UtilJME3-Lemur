@@ -229,11 +229,6 @@ public class ViewportPanel extends Panel {
 
         setViewPort(renderManager.createPostView("viewportPanel", cam));
 
-        /*
-         * Se ha puesto que use la layer "PICK_LAYER_GUI" para que reconozca los eventos de ratón, de la otra forma
-         * no los reconoce si hay algún panel que tome eventos (aunque no los consuma), tanto debajo como encima de
-         * él graficamente.
-        */
         stateManager.getState(BasePickState.class).addCollisionRoot(viewPortNode, viewport, PickState.PICK_LAYER_GUI);
 
         // Ensure that it gets closed when it is detached from the scenegraph.
