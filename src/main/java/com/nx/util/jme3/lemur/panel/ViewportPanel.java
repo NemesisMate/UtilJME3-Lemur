@@ -67,6 +67,7 @@ public class ViewportPanel extends Panel {
         super(elementid, style);
 
         viewPortNode = new Node("Root Node ViewPort Panel");
+        viewPortNode.setUserData("VPanel", this);
 
 //        setPreferredSize(new Vector3f(1, 1, 1)); // Patch to the first NaN size value. Try with setSize instead?
 
