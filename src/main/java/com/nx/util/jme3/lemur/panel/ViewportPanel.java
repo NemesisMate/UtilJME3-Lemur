@@ -17,7 +17,9 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import com.jme3.scene.control.Control;
 import com.nx.util.jme3.base.SpatialAutoManager;
+import com.nx.util.jme3.base.SpatialUtil;
 import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.core.AbstractGuiControlListener;
 import com.simsilica.lemur.core.GuiControl;
@@ -48,6 +50,97 @@ public class ViewportPanel extends Panel {
     protected boolean autoZoom = true;
 
 //    private Node rootNode;
+
+    private final Control viewportNodeUpdater = new AbstractControl() {
+        @Override
+        protected void controlUpdate(float tpf) {
+
+//                if(viewport == null) {
+//                    open();
+//                }
+
+//                    Vector3f size = ViewportPanel.this.getSize();
+////                    LoggerFactory.getLogger(this.getClass()).debug("Size: {}.", size);
+//                    if(!size.equals(lastSize)) {
+//                        lastSize.set(size);
+//                        setViewPortSize(lastSize);
+//                    }
+
+            viewport.setEnabled(true);
+
+            viewPortNode.updateLogicalState(tpf);
+
+            if(autoZoom) {
+
+                if(viewPortNode.getQuantity() > 0) {
+
+                    Spatial child = viewPortNode.getChild(0);
+                    viewPortNode.updateModelBound();
+
+                    //FIXME: When rotating, the bounds dimension can change, making the y be bigger than the x or z and viceverse, showing an undesired zoom-in-out effect.
+                    BoundingBox bb = (BoundingBox) child.getWorldBound();
+                    if (bb != null) {
+                        float x = bb.getXExtent();
+                        float y = bb.getYExtent();
+                        float z = bb.getZExtent();
+
+
+                        float dimensions;
+
+                        float bigger = x;
+
+                        if(z > bigger) {
+                            bigger = z;
+                        }
+
+                        if (y > bigger) {
+                            bigger = y;
+                            dimensions = cam.getFrustumTop() - cam.getFrustumBottom();
+                        } else {
+                            dimensions = cam.getFrustumRight() - cam.getFrustumLeft();
+                        }
+
+
+
+                        // Teoria de los triangulos semejantes
+                        float distance = (bigger * cam.getFrustumNear()) / (dimensions / 2f);
+
+//                                LoggerFactory.getLogger(this.getClass()).debug("BB center: {}, extents: {}, frustums: [b:{}, t:{}, r:{}, l:{}]distance: {}.",
+//                                        bb.getCenter(),
+//                                        bb.getExtent(new Vector3f()),
+//                                        cam.getFrustumBottom(),
+//                                        cam.getFrustumTop(),
+//                                        cam.getFrustumRight(),
+//                                        cam.getFrustumLeft(),
+//                                        distance);
+
+
+
+                        //TODO: Set the correct equation in relation with origin to know the perfect cam distance.
+                        camOffset.set(bb.getCenter()).addLocal(camOrigin).addLocal(0, 0, distance + bigger);
+                        if (!cam.getLocation().equals(camOffset)) {
+//                                    LoggerFactory.getLogger(this.getClass()).debug("Setting cam location: {}.", camOffset);
+                            //TODO: Smooth this movement.
+                            cam.setLocation(camOffset);
+                        }
+                    }
+                }
+            }
+
+            viewPortNode.updateGeometricState();
+//                else {
+
+//                    open();
+//                }
+//                LoggerFactory.getLogger(this.getClass()).debug("Geom location: {}, scale: {}.", geom.getWorldTranslation(), geom.getWorldScale());
+        }
+
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp) {
+//                viewPortNode.updateGeometricState();
+        }
+    };
+
 
 
     public ViewportPanel(AppStateManager stateManager) {
@@ -97,95 +190,23 @@ public class ViewportPanel extends Panel {
 
                 close();
             }
-        });
 
-        addControl(new AbstractControl() {
             @Override
-            protected void controlUpdate(float tpf) {
+            protected ScenegraphAutoRemoverChecker createChecker() {
+                return new ScenegraphAutoRemoverChecker() {
+                    @Override
+                    protected void controlUpdate(float tpf) {
+                        super.controlUpdate(tpf);
 
-//                if(viewport == null) {
-//                    open();
-//                }
-
-//                    Vector3f size = ViewportPanel.this.getSize();
-////                    LoggerFactory.getLogger(this.getClass()).debug("Size: {}.", size);
-//                    if(!size.equals(lastSize)) {
-//                        lastSize.set(size);
-//                        setViewPortSize(lastSize);
-//                    }
-
-                viewPortNode.updateLogicalState(tpf);
-
-                if(autoZoom) {
-
-                    if(viewPortNode.getQuantity() > 0) {
-
-                        Spatial child = viewPortNode.getChild(0);
-                        viewPortNode.updateModelBound();
-
-                        //FIXME: When rotating, the bounds dimension can change, making the y be bigger than the x or z and viceverse, showing an undesired zoom-in-out effect.
-                        BoundingBox bb = (BoundingBox) child.getWorldBound();
-                        if (bb != null) {
-                            float x = bb.getXExtent();
-                            float y = bb.getYExtent();
-                            float z = bb.getZExtent();
-
-
-                            float dimensions;
-
-                            float bigger = x;
-
-                            if(z > bigger) {
-                                bigger = z;
-                            }
-
-                            if (y > bigger) {
-                                bigger = y;
-                                dimensions = cam.getFrustumTop() - cam.getFrustumBottom();
-                            } else {
-                                dimensions = cam.getFrustumRight() - cam.getFrustumLeft();
-                            }
-
-
-
-                            // Teoria de los triangulos semejantes
-                            float distance = (bigger * cam.getFrustumNear()) / (dimensions / 2f);
-
-//                                LoggerFactory.getLogger(this.getClass()).debug("BB center: {}, extents: {}, frustums: [b:{}, t:{}, r:{}, l:{}]distance: {}.",
-//                                        bb.getCenter(),
-//                                        bb.getExtent(new Vector3f()),
-//                                        cam.getFrustumBottom(),
-//                                        cam.getFrustumTop(),
-//                                        cam.getFrustumRight(),
-//                                        cam.getFrustumLeft(),
-//                                        distance);
-
-
-
-                            //TODO: Set the correct equation in relation with origin to know the perfect cam distance.
-                            camOffset.set(bb.getCenter()).addLocal(camOrigin).addLocal(0, 0, distance + bigger);
-                            if (!cam.getLocation().equals(camOffset)) {
-//                                    LoggerFactory.getLogger(this.getClass()).debug("Setting cam location: {}.", camOffset);
-                                //TODO: Smooth this movement.
-                                cam.setLocation(camOffset);
-                            }
+                        if(viewport != null) {
+                            viewport.setEnabled(false);
                         }
                     }
-                }
-
-                viewPortNode.updateGeometricState();
-//                else {
-
-//                    open();
-//                }
-//                LoggerFactory.getLogger(this.getClass()).debug("Geom location: {}, scale: {}.", geom.getWorldTranslation(), geom.getWorldScale());
-            }
-
-            @Override
-            protected void controlRender(RenderManager rm, ViewPort vp) {
-//                viewPortNode.updateGeometricState();
+                };
             }
         });
+
+        addControl(viewportNodeUpdater);
     }
 
     /**
@@ -342,15 +363,7 @@ public class ViewportPanel extends Panel {
         ViewportPanel viewportPanel = this;
         while(viewportPanel != null) {
             pos.addLocal(viewportPanel.getWorldTranslation());
-
-            Spatial root = viewportPanel;
-            Spatial parent = viewportPanel.getParent();
-            while (parent != null) {
-                root = parent;
-                parent = parent.getParent();
-            }
-
-            viewportPanel = root.getUserData(NODE_DATA);
+            viewportPanel = SpatialUtil.getRootFor(viewportPanel).getUserData(NODE_DATA);
         }
 
 //        float h = Display.getHeight();
