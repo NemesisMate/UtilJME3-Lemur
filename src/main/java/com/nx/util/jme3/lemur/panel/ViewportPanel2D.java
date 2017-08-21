@@ -44,12 +44,12 @@ public class ViewportPanel2D extends ViewportPanel {
     protected void updatePerspective(Vector3f size) { }
 
     @Override
-    protected void setViewPortSize(Vector3f size, Vector3f offset) {
+    protected void setViewPortSize(Vector3f size) {
         if(viewport == null) {
             return;
         }
 
-        super.setViewPortSize(size, offset);
+        super.setViewPortSize(size);
         
         Camera camera = viewport.getCamera();
         rootNode.setLocalTranslation(camera.getFrustumLeft(), camera.getFrustumTop(), -10f);
