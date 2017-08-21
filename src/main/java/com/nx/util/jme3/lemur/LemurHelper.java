@@ -141,6 +141,10 @@ public final class LemurHelper {
         return panel;
     }
 
+    public static <T extends Panel> T setPrefSize(T panel, float xy) {
+        return setPrefSize(panel, xy, xy, 1);
+    }
+
     public static <T extends Panel> T setPrefSize(T panel, float x, float y) {
         return setPrefSize(panel, x, y, 1);
     }
