@@ -43,9 +43,11 @@ public class ViewportPanel extends Panel {
     protected RenderManager renderManager;
     protected AppStateManager stateManager;
 
-    Vector3f camOrigin = new Vector3f();
+    private final Vector3f camOrigin = new Vector3f();
 //    Vector3f boundsExtents = new Vector3f();
-    Vector3f camOffset = new Vector3f();
+    private final Vector3f camOffset = new Vector3f();
+
+    protected final Vector3f offset = new Vector3f();
 
     protected boolean autoZoom = true;
 
@@ -169,7 +171,7 @@ public class ViewportPanel extends Panel {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 open();
-                setViewPortSize(size);
+                setViewPortSize(size, pos);
             }
         });
 
@@ -345,7 +347,8 @@ public class ViewportPanel extends Panel {
         this.viewport.attachScene(viewPortNode);
     }
 
-    protected void setViewPortSize(Vector3f size) {
+
+    protected void setViewPortSize(Vector3f size, Vector3f offset) {
         if(viewport == null) {
             return;
         }
@@ -359,12 +362,17 @@ public class ViewportPanel extends Panel {
 
 //        Vector3f pos = this.getWorldTranslation();
 
-        Vector3f pos = new Vector3f();
-        ViewportPanel viewportPanel = this;
-        while(viewportPanel != null) {
-            pos.addLocal(viewportPanel.getWorldTranslation());
-            viewportPanel = SpatialUtil.getRootFor(viewportPanel).getUserData(NODE_DATA);
+        Vector3f pos = this.offset.set(offset).addLocal(this.getWorldTranslation());
+        ViewportPanel parentVPanel = SpatialUtil.getRootFor(this).getUserData(NODE_DATA);
+        if(parentVPanel != null) {
+            pos.addLocal(parentVPanel.offset);
         }
+
+//        ViewportPanel viewportPanel = this;
+//        while(viewportPanel != null) {
+//            pos.addLocal(viewportPanel.getWorldTranslation());
+//            viewportPanel = SpatialUtil.getRootFor(viewportPanel).getUserData(NODE_DATA);
+//        }
 
 //        float h = Display.getHeight();
 //        float w = Display.getWidth();
