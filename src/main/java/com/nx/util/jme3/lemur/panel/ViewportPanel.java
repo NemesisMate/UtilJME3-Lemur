@@ -43,9 +43,11 @@ public class ViewportPanel extends Panel {
     protected RenderManager renderManager;
     protected AppStateManager stateManager;
 
-    Vector3f camOrigin = new Vector3f();
+    private final Vector3f camOrigin = new Vector3f();
 //    Vector3f boundsExtents = new Vector3f();
-    Vector3f camOffset = new Vector3f();
+    private final Vector3f camOffset = new Vector3f();
+
+    protected final Vector3f realTranslation = new Vector3f();
 
     protected boolean autoZoom = true;
 
@@ -345,36 +347,48 @@ public class ViewportPanel extends Panel {
         this.viewport.attachScene(viewPortNode);
     }
 
+    protected void recalculateRealTranslation() {
+        realTranslation.set(this.getWorldTranslation());
+
+        Spatial root = SpatialUtil.getRootFor(this);
+
+        ViewportPanel viewportPanel = root.getUserData(NODE_DATA);
+        if(viewportPanel != null) {
+            //TODO: Find a prettier way
+            if(viewportPanel instanceof ViewportPanel2D) {
+
+                Camera cam = ((ViewportPanel2D) viewportPanel).cam;
+
+                realTranslation.subtractLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+                realTranslation.divideLocal(((ViewportPanel2D) viewportPanel).rootNode.getLocalScale());
+                realTranslation.addLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+            }
+
+            realTranslation.addLocal(viewportPanel.realTranslation);
+        }
+    }
+
     protected void setViewPortSize(Vector3f size) {
         if(viewport == null) {
             return;
         }
 
-//        LoggerFactory.getLogger(this.getClass()).debug("VIEWPORT SIZE: {}", size);
-
-//        Vector2f aux2f = new Vector2f();
-        Vector3f aux3f = Vector3f.UNIT_Z.negate();
-
-        cam.lookAtDirection(aux3f, Vector3f.UNIT_Y);
+        // Using realTranslation as an aux to avoid a new instance creation.
+        cam.lookAtDirection(realTranslation.set(Vector3f.UNIT_Z).negateLocal(), Vector3f.UNIT_Y);
 
 //        Vector3f pos = this.getWorldTranslation();
+        recalculateRealTranslation();
 
-        Vector3f pos = new Vector3f();
-        ViewportPanel viewportPanel = this;
-        while(viewportPanel != null) {
-            pos.addLocal(viewportPanel.getWorldTranslation());
-            viewportPanel = SpatialUtil.getRootFor(viewportPanel).getUserData(NODE_DATA);
-        }
 
 //        float h = Display.getHeight();
 //        float w = Display.getWidth();
         float h = cam.getHeight();
         float w = cam.getWidth();
 
-        float top    = (pos.y - 10 ) / h;
-        float bottom = (pos.y - size.y + 10) / h;
-        float left   = (pos.x + 10) / w;
-        float right  = (pos.x + size.x - 10) / w;
+        float top    = (realTranslation.y - 10 ) / h;
+        float bottom = (realTranslation.y - size.y + 10) / h;
+        float left   = (realTranslation.x + 10) / w;
+        float right  = (realTranslation.x + size.x - 10) / w;
         
         
 //        float top    = (pos.y ) / h;

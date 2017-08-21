@@ -50,7 +50,8 @@ public class ViewportPanel2D extends ViewportPanel {
         }
 
         super.setViewPortSize(size);
-        
+
+        //TODO: Wouldn't it work if instead of the rootNode, the viewportNode was used? (avoiding instanceof checking on recalculate real size on ViewportPanel)
         Camera camera = viewport.getCamera();
         rootNode.setLocalTranslation(camera.getFrustumLeft(), camera.getFrustumTop(), -10f);
         rootNode.setLocalScale((camera.getFrustumRight() * 2) / size.x, (camera.getFrustumTop() * 2) / size.y, 1);
