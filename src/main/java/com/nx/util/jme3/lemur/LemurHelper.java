@@ -210,7 +210,8 @@ public final class LemurHelper {
 
         addPopupListeners(parent, child, offsetPercent);
 
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+        GuiControl parentControl = parent.getControl(GuiControl.class);
+        parentControl.addListener(new AbstractGuiControlListener() {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 super.reshape(source, pos, size);
@@ -218,6 +219,8 @@ public final class LemurHelper {
                 child.getControl(GuiControl.class).invalidate();
             }
         });
+
+        parentControl.invalidate();
 
         return child;
     }
@@ -312,6 +315,8 @@ public final class LemurHelper {
     }
 
     private static void addPopupListeners(final Panel parent, final Panel child, final Vector4f offsetPercent) {
+        // Remember to add a layerListener to the parent (or equivalent) where colling this. The parent guiControl shall be invalidated too.
+
         child.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
@@ -342,7 +347,9 @@ public final class LemurHelper {
     }
 
     private static void addLayerListeners(final Panel parent, final Panel layer, final Vector3f scale) {
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+        GuiControl parentControl = parent.getControl(GuiControl.class);
+
+        parentControl.addListener(new AbstractGuiControlListener() {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 Vector3f prefSize = layer.getPreferredSize().set(size);
@@ -362,6 +369,8 @@ public final class LemurHelper {
                 layer.setLocalTranslation(position.addLocal(-(prefSize.x - x) / 2f, (prefSize.y - y) / 2f, 0));
             }
         });
+
+        parentControl.invalidate();
     }
 
 
