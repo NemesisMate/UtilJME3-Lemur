@@ -42,7 +42,6 @@ import com.jme3.math.Vector4f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
-import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.component.AbstractGuiComponent;
@@ -288,6 +287,10 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     protected float[] getCoordsArray() {
+        if(texCoords == null) {
+            return null;
+        }
+
         float texWidth = this.texture.getImage().getWidth();
         float texHeight = this.texture.getImage().getHeight();
 
@@ -306,7 +309,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
 
     protected void refreshBackground( Vector3f size ) {
         if( background == null ) {
-            Quad q = new Quad(size.x, size.y);
+            CoordedQuad q = new CoordedQuad(size.x, size.y, getCoordsArray());
             if( lit ) {
                 // Give the quad some normals
                 q.setBuffer(Type.Normal, 3,
@@ -322,9 +325,9 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
 
             background = new Geometry("background", q);
 
-            if(texCoords != null) {
-                applyTexCoords();
-            }
+//            if(texCoords != null) {
+//                applyTexCoords();
+//            }
 
             // Can't do this even though it seems logical because it
             // is just as likely that we are in bucket.gui.  It is up to
@@ -337,11 +340,15 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
             getNode().attachChild(background);
         } else {
             // Else reset the size of the quad
-            Quad q = (Quad)background.getMesh();
+            CoordedQuad q = (CoordedQuad)background.getMesh();
             if( size.x != q.getWidth() || size.y != q.getHeight() ) {               
-                q.updateGeometry(size.x, size.y);
+                q.updateGeometry(size.x, size.y, getCoordsArray());
                 q.clearCollisionData(); 
             }
+
+//            if(texCoords != null) {
+//                applyTexCoords();
+//            }
         }
         
         Vector2f effectiveScale = textureCoordinateScale == null ? Vector2f.UNIT_XY : textureCoordinateScale;
