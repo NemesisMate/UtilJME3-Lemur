@@ -20,6 +20,7 @@ import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import com.nx.util.jme3.base.SpatialAutoManager;
 import com.nx.util.jme3.base.SpatialUtil;
+import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import com.simsilica.lemur.core.AbstractGuiControlListener;
 import com.simsilica.lemur.core.GuiControl;
@@ -252,6 +253,7 @@ public class ViewportPanel extends Panel {
 
         setViewPort(renderManager.createPostView("viewportPanel", cam));
 
+        GuiGlobals.getInstance().setupGuiComparators(viewport);
         stateManager.getState(BasePickState.class).addCollisionRoot(viewPortNode, viewport, PickState.PICK_LAYER_GUI);
 
         // Ensure that it gets closed when it is detached from the scenegraph.
@@ -436,5 +438,10 @@ public class ViewportPanel extends Panel {
 
     public void detachAllScenes() {
         getViewportNode().detachAllChildren();
+    }
+
+
+    public static ViewportPanel getRootPanel(Spatial spatial) {
+        return SpatialUtil.getRootFor(spatial).getUserData(NODE_DATA);
     }
 }
