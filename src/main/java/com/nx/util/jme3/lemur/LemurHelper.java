@@ -346,7 +346,7 @@ public final class LemurHelper {
         });
     }
 
-    private static void addLayerListeners(final Panel parent, final Panel layer, final Vector3f scale) {
+    private static void addLayerListeners(Panel parent, final Panel layer, final Vector3f scale) {
         GuiControl parentControl = parent.getControl(GuiControl.class);
 
         parentControl.addListener(new AbstractGuiControlListener() {
@@ -373,7 +373,14 @@ public final class LemurHelper {
         parentControl.invalidate();
     }
 
-
+    public static void offsetLayer(Panel layer, final Vector3f offset) {
+        layer.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                source.getSpatial().move(offset);
+            }
+        });
+    }
 
     public static void layerAlign(Panel parent, Panel child, boolean front) {
         Integer layer = LayerComparator.getLayer(parent);
