@@ -420,13 +420,21 @@ public class ViewportPanel extends Panel {
         viewPortNode.addLight(light);
     }
 
+    public Node getViewportNode() {
+        return viewPortNode;
+    }
+
     public void attachScene(Spatial spatial) {
-        viewPortNode.detachAllChildren();
-        viewPortNode.attachChild(spatial);
+//        viewPortNode.detachAllChildren();
+        getViewportNode().attachChild(spatial);
 //        LoggerFactory.getLogger(this.getClass()).debug("Attaching to scene");
     }
 
-    public void detachScene() {
-        viewPortNode.detachAllChildren();
+    public void detachScene(Spatial spatial) {
+        getViewportNode().detachChild(spatial);
+    }
+
+    public void detachAllScenes() {
+        getViewportNode().detachAllChildren();
     }
 }

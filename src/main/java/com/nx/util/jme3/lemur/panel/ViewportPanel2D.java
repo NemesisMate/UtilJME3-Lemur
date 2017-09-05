@@ -10,7 +10,6 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.simsilica.lemur.style.ElementId;
 
 /**
@@ -58,8 +57,7 @@ public class ViewportPanel2D extends ViewportPanel {
     }
 
     @Override
-    public void attachScene(Spatial spatial) {
-        rootNode.detachAllChildren();
-        rootNode.attachChild(spatial);
+    public Node getViewportNode() {
+        return rootNode;
     }
 }
