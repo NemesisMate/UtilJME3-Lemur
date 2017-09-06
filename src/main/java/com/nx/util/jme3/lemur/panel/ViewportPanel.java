@@ -15,6 +15,7 @@ import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Node;
+import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
@@ -350,24 +351,25 @@ public class ViewportPanel extends Panel {
     }
 
     protected void recalculateRealTranslation() {
-        realTranslation.set(this.getWorldTranslation());
-
-        Spatial root = SpatialUtil.getRootFor(this);
-
-        ViewportPanel viewportPanel = root.getUserData(NODE_DATA);
-        if(viewportPanel != null) {
-            //TODO: Find a prettier way
-            if(viewportPanel instanceof ViewportPanel2D) {
-
-                Camera cam = ((ViewportPanel2D) viewportPanel).cam;
-
-                realTranslation.subtractLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
-                realTranslation.divideLocal(((ViewportPanel2D) viewportPanel).rootNode.getLocalScale());
-                realTranslation.addLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
-            }
-
-            realTranslation.addLocal(viewportPanel.realTranslation);
-        }
+        getRealWorldTranslation(this, realTranslation);
+//        realTranslation.set(this.getWorldTranslation());
+//
+//        Spatial root = SpatialUtil.getRootFor(this);
+//
+//        ViewportPanel viewportPanel = root.getUserData(NODE_DATA);
+//        if(viewportPanel != null) {
+//            //TODO: Find a prettier way
+//            if(viewportPanel instanceof ViewportPanel2D) {
+//
+//                Camera cam = ((ViewportPanel2D) viewportPanel).cam;
+//
+//                realTranslation.subtractLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+//                realTranslation.divideLocal(((ViewportPanel2D) viewportPanel).rootNode.getLocalScale());
+//                realTranslation.addLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+//            }
+//
+//            realTranslation.addLocal(viewportPanel.realTranslation);
+//        }
     }
 
     protected void setViewPortSize(Vector3f size) {
@@ -443,5 +445,47 @@ public class ViewportPanel extends Panel {
 
     public static ViewportPanel getRootPanel(Spatial spatial) {
         return SpatialUtil.getRootFor(spatial).getUserData(NODE_DATA);
+    }
+
+    public static Vector3f getRealWorldTranslation(Spatial spatial, Vector3f store) {
+        if(store == null) {
+            store = new Vector3f();
+        }
+
+        store.set(spatial.getWorldTranslation());
+
+        Spatial root = SpatialUtil.getRootFor(spatial);
+
+        ViewportPanel viewportPanel = root.getUserData(NODE_DATA);
+        if(viewportPanel != null) {
+            //TODO: Find a prettier way
+            if(viewportPanel instanceof ViewportPanel2D) {
+
+                Camera cam = ((ViewportPanel2D) viewportPanel).cam;
+
+                store.subtractLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+                store.divideLocal(((ViewportPanel2D) viewportPanel).rootNode.getLocalScale());
+                store.addLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+            }
+
+            store.addLocal(viewportPanel.realTranslation);
+        }
+
+        return store;
+    }
+
+    public static void depthFirstTraversal(Spatial spatial, final SceneGraphVisitor visitor) {
+        SceneGraphVisitor vpVisitor = new SceneGraphVisitor() {
+            @Override
+            public void visit(Spatial spatial) {
+                if(spatial instanceof ViewportPanel) {
+                    ((ViewportPanel) spatial).getViewportNode().depthFirstTraversal(this);
+                }
+
+                visitor.visit(spatial);
+            }
+        };
+
+        spatial.depthFirstTraversal(vpVisitor);
     }
 }
