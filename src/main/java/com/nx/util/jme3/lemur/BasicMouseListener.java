@@ -17,22 +17,22 @@ import com.simsilica.lemur.event.MouseListener;
 public class BasicMouseListener implements MouseListener {
     
     @Override
-    public void mouseButtonEvent(MouseButtonEvent mbe, Spatial sptl, Spatial sptl1) {
+    public void mouseButtonEvent(MouseButtonEvent event, Spatial target, Spatial capture) {
         
     }
 
     @Override
-    public void mouseEntered(MouseMotionEvent mme, Spatial sptl, Spatial sptl1) {
+    public void mouseEntered(MouseMotionEvent event, Spatial target, Spatial capture) {
         
     }
 
     @Override
-    public void mouseExited(MouseMotionEvent mme, Spatial sptl, Spatial sptl1) {
+    public void mouseExited(MouseMotionEvent event, Spatial target, Spatial capture) {
         
     }
 
     @Override
-    public void mouseMoved(MouseMotionEvent mme, Spatial sptl, Spatial sptl1) {
+    public void mouseMoved(MouseMotionEvent event, Spatial target, Spatial capture) {
         
     }
     

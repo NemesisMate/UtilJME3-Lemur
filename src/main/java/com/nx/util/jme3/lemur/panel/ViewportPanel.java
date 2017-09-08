@@ -429,12 +429,20 @@ public class ViewportPanel extends Panel {
     }
 
     public void attachScene(Spatial spatial) {
+        if (spatial == null) {
+            throw new IllegalArgumentException( "Scene cannot be null." );
+        }
+
 //        viewPortNode.detachAllChildren();
         getViewportNode().attachChild(spatial);
 //        LoggerFactory.getLogger(this.getClass()).debug("Attaching to scene");
     }
 
     public void detachScene(Spatial spatial) {
+        if (spatial == null) {
+            throw new IllegalArgumentException( "Scene cannot be null." );
+        }
+
         getViewportNode().detachChild(spatial);
     }
 

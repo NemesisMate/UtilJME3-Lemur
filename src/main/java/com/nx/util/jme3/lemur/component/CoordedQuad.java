@@ -75,7 +75,9 @@ public class CoordedQuad extends Mesh {
         });
 
 
-        setBuffer(VertexBuffer.Type.TexCoord, 2, texCoords);
+        if(texCoords != null) {
+            setBuffer(VertexBuffer.Type.TexCoord, 2, texCoords);
+        }
 
 
 

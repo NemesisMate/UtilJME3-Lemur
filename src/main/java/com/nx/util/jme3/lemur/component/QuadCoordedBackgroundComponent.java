@@ -54,8 +54,11 @@ import com.simsilica.lemur.core.GuiMaterial;
  *
  *  @author    Paul Speed
  */
+//TODO: Change this component. Make it use coords between 0 and 1 instead of image size so the coords_unit initialization can make sense
 public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
                                      implements Cloneable, ColoredComponent {
+    public static final Vector4f COORDS_UNIT = new Vector4f(0f, 0f, 1f, 1f);
+
     protected Geometry background;
     private ColorRGBA color;
     private float alpha = 1f;
@@ -70,6 +73,8 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     // Keep track of any scale we've already applied to the quad
     // so that we know how to apply scale changes.
     private Vector2f appliedTextureScale = new Vector2f(1, 1);
+
+    private Vector4f appliedTexCoords = new Vector4f(0, 0, 1, 1);
     private Vector4f texCoords;
 
     public QuadCoordedBackgroundComponent() {
@@ -97,7 +102,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     public QuadCoordedBackgroundComponent(Texture texture ) {
-        this(texture, 0, 0, 0.01f, false, null);
+        this(texture, 0, 0, 0.01f, false, COORDS_UNIT);
     }
 
     public QuadCoordedBackgroundComponent(Texture texture, Vector4f texCoords ) {
@@ -105,7 +110,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     public QuadCoordedBackgroundComponent(Texture texture, float xMargin, float yMargin ) {
-        this(texture, xMargin, yMargin, 0.01f, false, null);
+        this(texture, xMargin, yMargin, 0.01f, false, COORDS_UNIT);
     }
 
     public QuadCoordedBackgroundComponent(Texture texture, float xMargin, float yMargin, Vector4f texCoords ) {
@@ -115,12 +120,16 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     public QuadCoordedBackgroundComponent(Texture texture,
                                           float xMargin, float yMargin, float zOffset,
                                           boolean lit ) {
-        this(texture, xMargin, yMargin, zOffset, lit, null);
+        this(texture, xMargin, yMargin, zOffset, lit, COORDS_UNIT);
     }
 
     public QuadCoordedBackgroundComponent(Texture texture,
                                           float xMargin, float yMargin, float zOffset,
                                           boolean lit, Vector4f texCoords ) {
+        if(texCoords == null) {
+            throw new UnsupportedOperationException();
+        }
+
         this.xMargin = xMargin;
         this.yMargin = yMargin;
         this.zOffset = zOffset;
@@ -213,6 +222,10 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     public void setTexCoords(Vector4f texCoords) {
+        if(texCoords == null) {
+            throw new NullPointerException();
+        }
+
         this.texCoords = texCoords;
 
         if(background != null) {
@@ -287,10 +300,6 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     protected float[] getCoordsArray() {
-        if(texCoords == null) {
-            return null;
-        }
-
         float texWidth = this.texture.getImage().getWidth();
         float texHeight = this.texture.getImage().getHeight();
 
@@ -341,8 +350,15 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
         } else {
             // Else reset the size of the quad
             CoordedQuad q = (CoordedQuad)background.getMesh();
-            if( size.x != q.getWidth() || size.y != q.getHeight() ) {               
-                q.updateGeometry(size.x, size.y, getCoordsArray());
+            if( size.x != q.getWidth() || size.y != q.getHeight() ) {
+
+                float[] updatedCoords = null;
+                if(!appliedTexCoords.equals(texCoords)) {
+                    updatedCoords = getCoordsArray();
+                    appliedTexCoords.set(texCoords);
+                }
+
+                q.updateGeometry(size.x, size.y, updatedCoords);
                 q.clearCollisionData(); 
             }
 
