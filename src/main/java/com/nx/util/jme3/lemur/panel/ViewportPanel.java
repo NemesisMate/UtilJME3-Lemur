@@ -19,6 +19,7 @@ import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
+import com.jme3.util.SafeArrayList;
 import com.nx.util.jme3.base.SpatialAutoManager;
 import com.nx.util.jme3.base.SpatialUtil;
 import com.simsilica.lemur.GuiGlobals;
@@ -37,6 +38,13 @@ public class ViewportPanel extends Panel {
 
     public static final String ELEMENT_ID = "viewportPanel";
     public static final String NODE_DATA = "VPanel";
+
+    public interface ViewportPanelListener {
+        void onViewportCreate(ViewPort viewPort);
+        void onViewportRemoval(ViewPort viewPort);
+    }
+
+    SafeArrayList<ViewportPanelListener> listeners;
 
     protected ViewPort viewport;
     protected Node viewPortNode;
@@ -305,6 +313,13 @@ public class ViewportPanel extends Panel {
 //            });
 //
 //        }
+
+        if(listeners != null) {
+            for(ViewportPanelListener listener : listeners) {
+                listener.onViewportCreate(viewport);
+            }
+        }
+
     }
 
 
@@ -329,7 +344,14 @@ public class ViewportPanel extends Panel {
         stateManager.getState(BasePickState.class).removeCollisionRoot(viewport);
 //        lastSize.set(0, 0, 0);
 
+        ViewPort removed = viewport;
         viewport = null;
+
+        if(listeners != null) {
+            for(ViewportPanelListener listener : listeners) {
+                listener.onViewportRemoval(removed);
+            }
+        }
     }
 
     protected void setViewPort(ViewPort viewport) {
@@ -448,6 +470,21 @@ public class ViewportPanel extends Panel {
 
     public void detachAllScenes() {
         getViewportNode().detachAllChildren();
+    }
+
+
+    public void addListener(ViewportPanelListener listener) {
+        if(listeners == null) {
+            listeners = new SafeArrayList<>(ViewportPanelListener.class);
+        }
+
+        listeners.add(listener);
+    }
+
+    public void removeListener(ViewportPanelListener listener) {
+        if(listeners != null && listeners.remove(listener) && listeners.isEmpty()) {
+            listeners = null;
+        }
     }
 
 
