@@ -10,6 +10,8 @@ import com.jme3.app.Application;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.light.Light;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
@@ -57,7 +59,7 @@ public class ViewportPanel extends Panel {
 //    Vector3f boundsExtents = new Vector3f();
     private final Vector3f camOffset = new Vector3f();
 
-    protected final Vector3f realTranslation = new Vector3f();
+    protected final Transform realTransform = new Transform();
 
     protected boolean autoZoom = true;
 
@@ -373,7 +375,8 @@ public class ViewportPanel extends Panel {
     }
 
     protected void recalculateRealTranslation() {
-        getRealWorldTranslation(this, realTranslation);
+//        getRealWorldTranslation(this, realTransform.getTranslation());
+        getRealWorldTransform(this, realTransform);
 //        realTranslation.set(this.getWorldTranslation());
 //
 //        Spatial root = SpatialUtil.getRootFor(this);
@@ -398,6 +401,8 @@ public class ViewportPanel extends Panel {
         if(viewport == null) {
             return;
         }
+
+        Vector3f realTranslation = realTransform.getTranslation();
 
         // Using realTranslation as an aux to avoid a new instance creation.
         cam.lookAtDirection(realTranslation.set(Vector3f.UNIT_Z).negateLocal(), Vector3f.UNIT_Y);
@@ -492,6 +497,61 @@ public class ViewportPanel extends Panel {
         return SpatialUtil.getRootFor(spatial).getUserData(NODE_DATA);
     }
 
+    public static Transform getRealWorldTransform(Spatial spatial, Transform store) {
+        if(store == null) {
+            store = new Transform();
+        }
+
+        store.set(spatial.getWorldTransform());
+
+        Spatial root = SpatialUtil.getRootFor(spatial);
+
+        ViewportPanel viewportPanel = root.getUserData(NODE_DATA);
+        if(viewportPanel != null) {
+            Vector3f translation = store.getTranslation();
+            Quaternion rotation = store.getRotation();
+//            Vector3f scale = store.getScale();
+
+            //TODO: Find a prettier way
+            if(viewportPanel instanceof ViewportPanel2D) {
+
+
+
+                Camera cam = ((ViewportPanel2D) viewportPanel).cam;
+                Node node2d = ((ViewportPanel2D) viewportPanel).rootNode;
+
+                translation.subtractLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+
+
+                translation.divideLocal(node2d.getLocalScale());
+//                rotation.multLocal(node2d.getLocalRotation());
+//                scale.multLocal(node2d.getLocalScale());
+
+                translation.addLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+            }
+
+            translation.addLocal(viewportPanel.realTransform.getTranslation());
+            rotation.multLocal(viewportPanel.realTransform.getRotation());
+//            scale.multLocal(viewportPanel.realTransform.getScale());
+
+
+//            store.combineWithParent(viewportPanel.realTransform);
+        }
+
+        return store;
+    }
+
+    public static Vector3f getRealWorldScale(Spatial spatial, Vector3f store) {
+        if(store == null) {
+            store = new Vector3f();
+        }
+
+        // Yes, it is the same
+        store.set(spatial.getWorldScale());
+
+        return store;
+    }
+
     public static Vector3f getRealWorldTranslation(Spatial spatial, Vector3f store) {
         if(store == null) {
             store = new Vector3f();
@@ -508,12 +568,17 @@ public class ViewportPanel extends Panel {
 
                 Camera cam = ((ViewportPanel2D) viewportPanel).cam;
 
+                // We first remove the frustum extensions that affect to the translation
                 store.subtractLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
+
+                // We apply the inverse scale to the remaining translation
                 store.divideLocal(((ViewportPanel2D) viewportPanel).rootNode.getLocalScale());
+
+                // We read the removed extensions
                 store.addLocal(cam.getFrustumLeft(), cam.getFrustumTop(), -10f);
             }
 
-            store.addLocal(viewportPanel.realTranslation);
+            store.addLocal(viewportPanel.realTransform.getTranslation());
         }
 
         return store;

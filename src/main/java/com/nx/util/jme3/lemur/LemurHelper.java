@@ -286,6 +286,10 @@ public final class LemurHelper {
         return layer;
     }
 
+    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
+        return addLayerToPanelViewported(parent, layer, Vector3f.UNIT_XYZ, stateManager);
+    }
+
     /**
      * WARNING: Can't currently be undone.
      *
@@ -295,21 +299,13 @@ public final class LemurHelper {
      * @param <T>
      * @return
      */
-    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
+    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, Vector3f scale, AppStateManager stateManager) {
         final ViewportPanel viewportPanel = new ViewportPanel2D(stateManager, new ElementId("Layer"), null);
         viewportPanel.attachScene(layer);
 
         addToPanel(parent, viewportPanel);
-
-        layer.move(0, 0, 1);
-
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
-            @Override
-            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
-                viewportPanel.setPreferredSize(viewportPanel.getPreferredSize().set(size));
-                layer.setPreferredSize(layer.getPreferredSize().set(size));
-            }
-        });
+        addLayerListeners(parent, viewportPanel, scale);
+        addLayerListeners(viewportPanel, layer, Vector3f.UNIT_XYZ);
 
         return layer;
     }
