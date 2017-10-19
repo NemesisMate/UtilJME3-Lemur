@@ -12,11 +12,31 @@ public class ViewportAppStatePickup extends ViewportAppState {
 
     public static final String PICK_LAYER_SCENEGUIOVERLAY = "sceneGuiOverlay";
 
+    private int layerIndex;
+    private String layerName;
+
     public ViewportAppStatePickup() {
-        super(Mode.MAIN, PICK_LAYER_SCENEGUIOVERLAY);
+        this(Mode.MAIN, 1);
+    }
+
+    public ViewportAppStatePickup(Mode mode) {
+        this(mode, 1);
+    }
+
+    public ViewportAppStatePickup(Mode mode, int layerIndex) {
+        super(mode, PICK_LAYER_SCENEGUIOVERLAY + "_" + layerIndex);
+
+        if(layerIndex < 0) {
+            throw new IllegalArgumentException("Index must be a positive number");
+        }
 
         this.rootNode = new Node(PICK_LAYER_SCENEGUIOVERLAY);
+
+        this.layerName = PICK_LAYER_SCENEGUIOVERLAY + "_" + layerIndex;
+        this.layerIndex = layerIndex;
     }
+
+
 
     @Override
     protected void initialize(Application app) {
@@ -37,9 +57,9 @@ public class ViewportAppStatePickup extends ViewportAppState {
 
         if(GuiGlobals.getInstance() != null) {
             PickState pickState = getState(PickState.class);
-            pickState.addCollisionRoot(viewPort, PICK_LAYER_SCENEGUIOVERLAY);
+            pickState.addCollisionRoot(viewPort, layerName);
 
-            String[] newOrder = addToArray(pickState.getPickLayerOrder(), PICK_LAYER_SCENEGUIOVERLAY, 1);
+            String[] newOrder = addToArray(pickState.getPickLayerOrder(), layerName, layerIndex);
 
             pickState.setPickLayerOrder(newOrder);
         }
@@ -58,7 +78,7 @@ public class ViewportAppStatePickup extends ViewportAppState {
 
             int i = 0;
             for(String name : oldOrder) {
-                if(!name.equals(PICK_LAYER_SCENEGUIOVERLAY)) {
+                if(!name.equals(layerName)) {
                     newOrder[i++] = name;
                 }
             }
@@ -71,6 +91,11 @@ public class ViewportAppStatePickup extends ViewportAppState {
     private static <T> T[] addToArray(T[] array, T object, int index) {
         int oldLength = array.length;
         int newLength = oldLength + 1;
+
+        if(index > oldLength) {
+            index = oldLength;
+        }
+
         T[] newArray = (T[]) Array.newInstance(array.getClass().getComponentType(), newLength);
 
         if(index > 0) {
