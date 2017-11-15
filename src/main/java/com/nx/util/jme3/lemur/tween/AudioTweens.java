@@ -19,6 +19,16 @@ public final class AudioTweens {
         return Tweens.callMethod(target, "play");
     }
 
+    /**
+     *
+     * @deprecated because of it doesn't make much sense. The tweens are usually created each time the effect is called
+     * so a new instance is already being created with the normal play action.
+     */
+    @Deprecated
+    public static Tween playInstance(AudioNode target) {
+        return Tweens.callMethod(target, "playInstance");
+    }
+
     public static Tween stop(AudioNode target) {
         return Tweens.callMethod(target, "stop");
     }
