@@ -10,7 +10,6 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.simsilica.lemur.style.ElementId;
 
 /**
@@ -50,15 +49,15 @@ public class ViewportPanel2D extends ViewportPanel {
         }
 
         super.setViewPortSize(size);
-        
+
+        //TODO: Wouldn't it work if instead of the rootNode, the viewportNode was used? (avoiding instanceof checking on recalculate real size on ViewportPanel)
         Camera camera = viewport.getCamera();
         rootNode.setLocalTranslation(camera.getFrustumLeft(), camera.getFrustumTop(), -10f);
         rootNode.setLocalScale((camera.getFrustumRight() * 2) / size.x, (camera.getFrustumTop() * 2) / size.y, 1);
     }
 
     @Override
-    public void attachScene(Spatial spatial) {
-        rootNode.detachAllChildren();
-        rootNode.attachChild(spatial);
+    public Node getViewportNode() {
+        return rootNode;
     }
 }

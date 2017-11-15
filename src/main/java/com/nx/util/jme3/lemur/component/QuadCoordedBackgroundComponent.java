@@ -42,7 +42,6 @@ import com.jme3.math.Vector4f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
-import com.jme3.scene.shape.Quad;
 import com.jme3.texture.Texture;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.component.AbstractGuiComponent;
@@ -55,8 +54,11 @@ import com.simsilica.lemur.core.GuiMaterial;
  *
  *  @author    Paul Speed
  */
+//TODO: Change this component. Make it use coords between 0 and 1 instead of image size so the coords_unit initialization can make sense
 public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
                                      implements Cloneable, ColoredComponent {
+    public static final Vector4f COORDS_UNIT = new Vector4f(0f, 0f, 1f, 1f);
+
     protected Geometry background;
     private ColorRGBA color;
     private float alpha = 1f;
@@ -71,6 +73,8 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     // Keep track of any scale we've already applied to the quad
     // so that we know how to apply scale changes.
     private Vector2f appliedTextureScale = new Vector2f(1, 1);
+
+    private Vector4f appliedTexCoords = new Vector4f(0, 0, 1, 1);
     private Vector4f texCoords;
 
     public QuadCoordedBackgroundComponent() {
@@ -98,7 +102,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     public QuadCoordedBackgroundComponent(Texture texture ) {
-        this(texture, 0, 0, 0.01f, false, null);
+        this(texture, 0, 0, 0.01f, false, COORDS_UNIT);
     }
 
     public QuadCoordedBackgroundComponent(Texture texture, Vector4f texCoords ) {
@@ -106,7 +110,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     public QuadCoordedBackgroundComponent(Texture texture, float xMargin, float yMargin ) {
-        this(texture, xMargin, yMargin, 0.01f, false, null);
+        this(texture, xMargin, yMargin, 0.01f, false, COORDS_UNIT);
     }
 
     public QuadCoordedBackgroundComponent(Texture texture, float xMargin, float yMargin, Vector4f texCoords ) {
@@ -116,12 +120,16 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     public QuadCoordedBackgroundComponent(Texture texture,
                                           float xMargin, float yMargin, float zOffset,
                                           boolean lit ) {
-        this(texture, xMargin, yMargin, zOffset, lit, null);
+        this(texture, xMargin, yMargin, zOffset, lit, COORDS_UNIT);
     }
 
     public QuadCoordedBackgroundComponent(Texture texture,
                                           float xMargin, float yMargin, float zOffset,
                                           boolean lit, Vector4f texCoords ) {
+        if(texCoords == null) {
+            throw new UnsupportedOperationException();
+        }
+
         this.xMargin = xMargin;
         this.yMargin = yMargin;
         this.zOffset = zOffset;
@@ -214,6 +222,10 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     }
 
     public void setTexCoords(Vector4f texCoords) {
+        if(texCoords == null) {
+            throw new NullPointerException();
+        }
+
         this.texCoords = texCoords;
 
         if(background != null) {
@@ -262,7 +274,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
     public void reshape( Vector3f pos, Vector3f size ) {
         refreshBackground(size);
 
-        background.setLocalTranslation(pos.x, pos.y - size.y, pos.z + zOffset);
+        background.setLocalTranslation(pos.x, pos.y - size.y, pos.z);
         pos.x += xMargin;
         pos.y -= yMargin;
         pos.z += zOffset;
@@ -306,7 +318,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
 
     protected void refreshBackground( Vector3f size ) {
         if( background == null ) {
-            Quad q = new Quad(size.x, size.y);
+            CoordedQuad q = new CoordedQuad(size.x, size.y, getCoordsArray());
             if( lit ) {
                 // Give the quad some normals
                 q.setBuffer(Type.Normal, 3,
@@ -322,9 +334,9 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
 
             background = new Geometry("background", q);
 
-            if(texCoords != null) {
-                applyTexCoords();
-            }
+//            if(texCoords != null) {
+//                applyTexCoords();
+//            }
 
             // Can't do this even though it seems logical because it
             // is just as likely that we are in bucket.gui.  It is up to
@@ -337,11 +349,22 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
             getNode().attachChild(background);
         } else {
             // Else reset the size of the quad
-            Quad q = (Quad)background.getMesh();
-            if( size.x != q.getWidth() || size.y != q.getHeight() ) {               
-                q.updateGeometry(size.x, size.y);
+            CoordedQuad q = (CoordedQuad)background.getMesh();
+            if( size.x != q.getWidth() || size.y != q.getHeight() ) {
+
+                float[] updatedCoords = null;
+                if(!appliedTexCoords.equals(texCoords)) {
+                    updatedCoords = getCoordsArray();
+                    appliedTexCoords.set(texCoords);
+                }
+
+                q.updateGeometry(size.x, size.y, updatedCoords);
                 q.clearCollisionData(); 
             }
+
+//            if(texCoords != null) {
+//                applyTexCoords();
+//            }
         }
         
         Vector2f effectiveScale = textureCoordinateScale == null ? Vector2f.UNIT_XY : textureCoordinateScale;

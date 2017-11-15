@@ -6,6 +6,7 @@ import com.jme3.math.Vector4f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.util.TempVars;
+import com.nx.util.jme3.base.SpatialAutoManager;
 import com.nx.util.jme3.lemur.layout.CenterAlignLayout;
 import com.nx.util.jme3.lemur.layout.WrapperLayout;
 import com.nx.util.jme3.lemur.panel.ViewportPanel;
@@ -140,6 +141,10 @@ public final class LemurHelper {
         return panel;
     }
 
+    public static <T extends Panel> T setPrefSize(T panel, float xy) {
+        return setPrefSize(panel, xy, xy, 1);
+    }
+
     public static <T extends Panel> T setPrefSize(T panel, float x, float y) {
         return setPrefSize(panel, x, y, 1);
     }
@@ -167,9 +172,21 @@ public final class LemurHelper {
     }
 
     public static <T extends Panel> T addToPanel(Panel parent, T child, Vector3f offset) {
-        Node node = new Node();
+        final Node node = new Node();
         parent.attachChild(node);
         node.attachChild(child);
+
+        child.addControl(new SpatialAutoManager() {
+            @Override
+            public void onAttached() { }
+
+            @Override
+            public void onDetached() {
+                if(spatial.getParent() == null) {
+                    node.removeFromParent();
+                }
+            }
+        });
 
         node.setLocalTranslation(offset);
 
@@ -193,7 +210,8 @@ public final class LemurHelper {
 
         addPopupListeners(parent, child, offsetPercent);
 
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+        GuiControl parentControl = parent.getControl(GuiControl.class);
+        parentControl.addListener(new AbstractGuiControlListener() {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 super.reshape(source, pos, size);
@@ -201,6 +219,8 @@ public final class LemurHelper {
                 child.getControl(GuiControl.class).invalidate();
             }
         });
+
+        parentControl.invalidate();
 
         return child;
     }
@@ -266,6 +286,10 @@ public final class LemurHelper {
         return layer;
     }
 
+    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
+        return addLayerToPanelViewported(parent, layer, Vector3f.UNIT_XYZ, stateManager);
+    }
+
     /**
      * WARNING: Can't currently be undone.
      *
@@ -275,26 +299,20 @@ public final class LemurHelper {
      * @param <T>
      * @return
      */
-    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, AppStateManager stateManager) {
+    public static <T extends Panel> T addLayerToPanelViewported(Panel parent, final T layer, Vector3f scale, AppStateManager stateManager) {
         final ViewportPanel viewportPanel = new ViewportPanel2D(stateManager, new ElementId("Layer"), null);
         viewportPanel.attachScene(layer);
 
         addToPanel(parent, viewportPanel);
-
-        layer.move(0, 0, 1);
-
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
-            @Override
-            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
-                viewportPanel.setPreferredSize(viewportPanel.getPreferredSize().set(size));
-                layer.setPreferredSize(layer.getPreferredSize().set(size));
-            }
-        });
+        addLayerListeners(parent, viewportPanel, scale);
+        addLayerListeners(viewportPanel, layer, Vector3f.UNIT_XYZ);
 
         return layer;
     }
 
     private static void addPopupListeners(final Panel parent, final Panel child, final Vector4f offsetPercent) {
+        // Remember to add a layerListener to the parent (or equivalent) where colling this. The parent guiControl shall be invalidated too.
+
         child.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
@@ -324,12 +342,14 @@ public final class LemurHelper {
         });
     }
 
-    private static void addLayerListeners(final Panel parent, final Panel layer, final Vector3f scale) {
-        parent.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+    private static void addLayerListeners(Panel parent, final Panel layer, final Vector3f scale) {
+        GuiControl parentControl = parent.getControl(GuiControl.class);
+
+        parentControl.addListener(new AbstractGuiControlListener() {
             @Override
             public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
                 Vector3f prefSize = layer.getPreferredSize().set(size);
-                Vector3f position = layer.getLocalTranslation();
+                Vector3f position = layer.getLocalTranslation().set(0, 0, pos.z + 1);
 
                 InsetsComponent insetsComponent = ((Panel)source.getSpatial()).getInsetsComponent();
                 if(insetsComponent != null) {
@@ -345,9 +365,18 @@ public final class LemurHelper {
                 layer.setLocalTranslation(position.addLocal(-(prefSize.x - x) / 2f, (prefSize.y - y) / 2f, 0));
             }
         });
+
+        parentControl.invalidate();
     }
 
-
+    public static void offsetLayer(Panel layer, final Vector3f offset) {
+        layer.getControl(GuiControl.class).addListener(new AbstractGuiControlListener() {
+            @Override
+            public void reshape(GuiControl source, Vector3f pos, Vector3f size) {
+                source.getSpatial().move(offset);
+            }
+        });
+    }
 
     public static void layerAlign(Panel parent, Panel child, boolean front) {
         Integer layer = LayerComparator.getLayer(parent);
