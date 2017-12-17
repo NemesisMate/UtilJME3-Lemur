@@ -148,6 +148,7 @@ public class QuadCoordedBackgroundComponent extends AbstractGuiComponent
         QuadCoordedBackgroundComponent result = (QuadCoordedBackgroundComponent)super.clone();
         result.material = material.clone();
         result.background = null;
+        result.appliedTextureScale = new Vector2f(1, 1);
         return result;
     }
 
