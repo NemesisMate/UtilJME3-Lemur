@@ -77,9 +77,16 @@ public final class LemurHelper {
         return parent.getElementId().child(id);
     }
 
+    public static <T extends Panel> T addChildIfNotParented(Container container, T child) {
+        if(child.getParent() == null) { container.addChild(child); } return child;
+    }
+
+    public static <T extends Panel> T addChildIfDiffParent(Container container, T child) {
+        if(child.getParent() != container) { container.addChild(child); } return child;
+    }
+
     public static <T extends Panel> T addChild(Container container, T child) {
-        container.addChild(child);
-        return child;
+        container.addChild(child); return child;
     }
 
     public static <T extends Panel> T addChild(Container container, T child, float x, float y, float top, float left, float bottom, float right) {
