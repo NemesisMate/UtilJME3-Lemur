@@ -56,13 +56,14 @@ public class ViewportPanel extends Panel {
     protected AppStateManager stateManager;
 
     private final Vector3f camOrigin = new Vector3f();
-//    Vector3f boundsExtents = new Vector3f();
+    //    Vector3f boundsExtents = new Vector3f();
     private final Vector3f camOffset = new Vector3f();
 
     protected final Transform realTransform = new Transform();
 
     protected boolean autoZoom = true;
 
+    private final Vector3f lastPosition =new Vector3f ();
 //    private Node rootNode;
 
     private final Control viewportNodeUpdater = new AbstractControl() {
@@ -139,6 +140,14 @@ public class ViewportPanel extends Panel {
                         }
                     }
                 }
+            }
+
+            // Checks if the position of the ViewPanel changed, if so, the ViewPort will be set to the new location
+            // otherwise our loaded models and scenes will stay fixed
+            // To do so we use the method already in use for the control
+            if (!(ViewportPanel.this.getWorldTranslation().equals(getlastposition()))){
+                setViewPortSize(ViewportPanel.this.getSize());
+                refreshLastPosition();
             }
 
             viewPortNode.updateGeometricState();
@@ -242,7 +251,7 @@ public class ViewportPanel extends Panel {
 //        this.cam.setLocation(Vector3f.ZERO);
         this.cam.setLocation(new Vector3f(0, 0, 10));
     }
-    
+
     public void setCamPosition(Vector3f position) {
         //If autozoom, this location works as the camera origin
         if(!autoZoom) {
@@ -322,6 +331,7 @@ public class ViewportPanel extends Panel {
             }
         }
 
+        refreshLastPosition();
     }
 
 
@@ -420,8 +430,8 @@ public class ViewportPanel extends Panel {
         float bottom = (realTranslation.y - size.y + 10) / h;
         float left   = (realTranslation.x + 10) / w;
         float right  = (realTranslation.x + size.x - 10) / w;
-        
-        
+
+
 //        float top    = (pos.y ) / h;
 //        float bottom = (pos.y - size.y ) / h;
 //        float left   = (pos.x ) / w;
@@ -598,4 +608,14 @@ public class ViewportPanel extends Panel {
 
         spatial.depthFirstTraversal(vpVisitor);
     }
+
+  private void refreshLastPosition() {
+        lastPosition.set(ViewportPanel.this.getWorldTranslation());
+    }
+
+    private Vector3f getlastposition(){
+        return lastPosition;
+    }
+
+
 }
