@@ -63,8 +63,7 @@ public class ViewportPanel extends Panel {
 
     protected boolean autoZoom = true;
 
-    protected Vector3f lastposition;
-
+    private final Vector3f lastPosition =new Vector3f ();
 //    private Node rootNode;
 
     private final Control viewportNodeUpdater = new AbstractControl() {
@@ -146,9 +145,9 @@ public class ViewportPanel extends Panel {
             // Checks if the position of the ViewPanel changed, if so, the ViewPort will be set to the new location
             // otherwise our loaded models and scenes will stay fixed
             // To do so we use the method already in use for the control
-            if (!(ViewportPanel.this.getWorldTranslation().equals(refreshLastPosition()))) {
+            if (!(ViewportPanel.this.getWorldTranslation().equals(getlastposition()))){
                 setViewPortSize(ViewportPanel.this.getSize());
-                setlastposition();
+                refreshLastPosition();
             }
 
             viewPortNode.updateGeometricState();
@@ -332,8 +331,7 @@ public class ViewportPanel extends Panel {
             }
         }
 
-        setlastposition();
-
+        refreshLastPosition();
     }
 
 
@@ -611,12 +609,12 @@ public class ViewportPanel extends Panel {
         spatial.depthFirstTraversal(vpVisitor);
     }
 
-    private void setlastposition() {
-        lastposition =  ViewportPanel.this.getWorldTranslation().clone();
+  private void refreshLastPosition() {
+        lastPosition.set(ViewportPanel.this.getWorldTranslation());
     }
 
-    private Vector3f refreshLastPosition(){
-        return lastposition;
+    private Vector3f getlastposition(){
+        return lastPosition;
     }
 
 
