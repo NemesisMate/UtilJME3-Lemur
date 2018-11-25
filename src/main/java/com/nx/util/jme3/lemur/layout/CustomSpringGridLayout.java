@@ -42,11 +42,21 @@ import com.simsilica.lemur.component.AbstractGuiComponent;
 import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.core.GuiControl;
 import com.simsilica.lemur.core.GuiLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class CustomSpringGridLayout extends AbstractGuiComponent
-        implements GuiLayout, Cloneable {
+public class CustomSpringGridLayout extends AbstractGuiComponent implements GuiLayout, Cloneable {
+
+    Logger log = LoggerFactory.getLogger(CustomSpringGridLayout.class);
 
     private boolean saveAspectRatio = true;
     private boolean distributeAspectRemaining = true;
@@ -342,7 +352,9 @@ public class CustomSpringGridLayout extends AbstractGuiComponent
 //                float lastAppliedAspect = size.get(aspectIndex) - aspectOffset; // - lastAppliedAspect;
 //                float lastAppliedAspect = -aspectOffset;
                 float lastAppliedAspect = size.get(aspectIndex) - totalSized;
-                System.out.println("DISTRIBUTING LAST APPLIED ASPECT: " + lastAppliedAspect + ", for size: " + size.get(aspectIndex) + ", " + aspectRemainingsToCenter);
+                log.trace("Distributing last applied aspect: {}, for size: {}. Remaining: {}", lastAppliedAspect, size.get(aspectIndex));
+                log.trace("Remaining aspect: {}", aspectRemainingsToCenter);
+
                 if (lastAppliedAspect > 0 && !children.isEmpty()) {
 
                     if(aspectRemainingsToCenter) {
@@ -388,7 +400,7 @@ public class CustomSpringGridLayout extends AbstractGuiComponent
                         Entry entry = children.get(0).get(0);
                         distribute(entry, distributeAmount, aspectIndex);
 
-                        System.out.println("DISTRIBUTING AMOUNT: " + distributeAmount + ", to: " + entry.child.hashCode());
+                        log.trace("Distributing amount: {}, to: {}", distributeAmount, entry.child.hashCode());
 
                         Iterator<Map<Integer, Entry>> iterator = children.values().iterator();
                         iterator.next();
@@ -414,7 +426,7 @@ public class CustomSpringGridLayout extends AbstractGuiComponent
 
 
 
-                        System.out.println("DISTRIBUTING AMOUNT: " + distributeAmount + ", to: " + entry.child.hashCode());
+                        log.trace("Distributing amount: {}, to: {}", distributeAmount, entry.child.hashCode());
                     }
                 }
             }

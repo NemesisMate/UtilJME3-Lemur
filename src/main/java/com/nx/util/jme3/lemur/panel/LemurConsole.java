@@ -38,12 +38,22 @@ package com.nx.util.jme3.lemur.panel;
 
 import com.google.common.base.Objects;
 import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.math.Vector3f;
 import com.nx.util.jme3.lemur.ChatHistory;
 import com.nx.util.jme3.lemur.ConsoleCommand;
 import com.nx.util.jme3.lemur.CustomGridPanel;
-import com.simsilica.lemur.*;
+import com.simsilica.lemur.Axis;
+import com.simsilica.lemur.Command;
+import com.simsilica.lemur.DefaultRangedValueModel;
+import com.simsilica.lemur.GridPanel;
+import com.simsilica.lemur.GuiGlobals;
+import com.simsilica.lemur.ListBox;
+import com.simsilica.lemur.Panel;
+import com.simsilica.lemur.RangedValueModel;
+import com.simsilica.lemur.Slider;
+import com.simsilica.lemur.TextField;
 import com.simsilica.lemur.component.BorderLayout;
 import com.simsilica.lemur.component.TextEntryComponent;
 import com.simsilica.lemur.core.GuiControl;
@@ -56,7 +66,11 @@ import com.simsilica.lemur.input.AnalogFunctionListener;
 import com.simsilica.lemur.input.FunctionId;
 import com.simsilica.lemur.list.CellRenderer;
 import com.simsilica.lemur.list.DefaultCellRenderer;
-import com.simsilica.lemur.style.*;
+import com.simsilica.lemur.style.Attributes;
+import com.simsilica.lemur.style.ElementId;
+import com.simsilica.lemur.style.StyleAttribute;
+import com.simsilica.lemur.style.StyleDefaults;
+import com.simsilica.lemur.style.Styles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -272,20 +286,20 @@ public class LemurConsole<T> extends Panel {
         layout.addChild(BorderLayout.Position.South, textField);
         setPreferredSize(new Vector3f(1000, 100, 0));
 
-        
+
         textField.getActionMap().put(new KeyAction(KeyInput.KEY_UP), new KeyActionListener() {
             @Override
             public void keyAction(TextEntryComponent arg0, KeyAction arg1) {
+                log.debug("History up");
                 textField.setText(chatHistory.moveUp(textField.getText()));
-                System.out.println("UP - asdf");
             }
         });
         
         textField.getActionMap().put(new KeyAction(KeyInput.KEY_DOWN), new KeyActionListener() {
             @Override
             public void keyAction(TextEntryComponent arg0, KeyAction arg1) {
+                log.debug("History down");
                 textField.setText(chatHistory.moveDown());
-                System.out.println("DOWN - asdf");
             }
         });
 
@@ -443,9 +457,7 @@ public class LemurConsole<T> extends Panel {
         if(widthLimit == endMargin) {
             widthLimit = grid.getPreferredSize().getX();
             if(widthLimit == endMargin) {
-                if(log.isTraceEnabled()) {
-                    log.trace("The console hasn't got any size, so no wrap can be performed.");
-                }
+                log.trace("The console hasn't got any size, so no wrap can be performed.");
                 model.add((T) (finalMessage));
                 return;
             }
@@ -464,6 +476,12 @@ public class LemurConsole<T> extends Panel {
         }
     }
 
+    public float getLineHeight() {
+        BitmapFont font = GuiGlobals.getInstance().getStyles().getSelector(getStyle()).get("font", BitmapFont.class);
+        BitmapText text = new BitmapText(font);
+        text.setText("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789()[]:;\"");
+        return text.getHeight();
+    }
 
     // Easy wrap - not word aware and no line adjusting aware (this... is not well done at all - it treats all letters as if they occupied the same width xD)
     private String[] getWrap(String finalMessage, float currentWidth, float widthLimit) {
@@ -482,12 +500,10 @@ public class LemurConsole<T> extends Panel {
         startIndex = i * messagesLength;
         messages[i] = finalMessage.substring(startIndex, finalLength);
 
-        if(log.isDebugEnabled()) {
-            log.debug("Wrapped: {}, into: {}.", finalMessage, Arrays.toString(messages));
+        log.trace("Wrapped: {}, into: {}.", finalMessage, Arrays.toString(messages));
 
-            for(String message : messages) {
-                log.debug("Wr: {}", message);
-            }
+        for(String message : messages) {
+            log.trace("Wr: {}", message);
         }
 
 
