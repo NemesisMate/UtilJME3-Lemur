@@ -62,6 +62,12 @@ public class ViewportPanel extends Panel {
     protected final Transform realTransform = new Transform();
 
     protected boolean autoZoom = true;
+    protected BoundingBox cachedBB = null;
+    
+    public void cacheBB() {
+        Spatial child = viewPortNode.getChild(0);
+        cachedBB = (BoundingBox) child.getWorldBound().clone();
+    }
 
     private final Vector3f lastPosition =new Vector3f ();
 //    private Node rootNode;
@@ -93,7 +99,10 @@ public class ViewportPanel extends Panel {
                     viewPortNode.updateModelBound();
 
                     //FIXME: When rotating, the bounds dimension can change, making the y be bigger than the x or z and viceverse, showing an undesired zoom-in-out effect.
-                    BoundingBox bb = (BoundingBox) child.getWorldBound();
+                    BoundingBox bb;
+                    if (cachedBB == null)
+                        bb = (BoundingBox) child.getWorldBound();
+                    else bb = cachedBB;
                     if (bb != null) {
                         float x = bb.getXExtent();
                         float y = bb.getYExtent();
